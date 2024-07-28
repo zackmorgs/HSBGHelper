@@ -1,0 +1,81 @@
+@using AntDesign.Icons
+
+@code {
+    [Parameter]
+    public int Id { 
+        get; 
+        set; 
+    }
+
+    [Parameter]
+    public string Image
+    {
+        get;
+        set;
+    }   
+
+    [Parameter]
+    public string Name
+    {
+        get;
+        set;
+    }
+
+    public bool ShowModal { get; set; } = false;
+
+    public void ToggleModalClick()
+    {
+        ShowModal = !ShowModal;
+    }
+}
+
+<li>
+    <a class="spell-card h-full" @onclick="@ToggleModalClick">
+        <img class="spell-img mx-auto" src="@Image" alt="@Name" />
+        @* <h4 class="spell-name text-center">@Name</h4> *@
+    </a>
+</li>
+@if (ShowModal)
+{
+    <div id="spell-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 backdrop-blur-sm flex justify-center items-center z-10"
+        onclick="@ToggleModalClick">
+        <div class="max-w-screen-lg w-full relative">
+            <div class="flex flex-col items-center">
+                <img class="hero-img" src="@Image" alt="@Name" />
+                @* <h4>@Name</h4> *@
+                <a href="/spells/@Id"   class="btn btn-primary mt-4">View Spell <RightOutlined /></a>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .spell-card {
+        display:block;
+        padding: 1rem;
+        transition: transform 0.3s;
+        border-radius:0.25rem;
+    }
+    .spell-card:hover {
+        transform: scale(1.25);
+    }
+    .spell-img {
+        filter: drop-shadow(rgba(0, 0, 0, 0.6) 0px 3px 3px);
+        max-width:90%;
+    }
+
+    .spell-name {
+        color: #412d2d;
+        filter: drop-shadow(rgba(0, 0, 0, 0.6) 0px 3px 3px);
+        line-height: 1.25rem;
+    }
+
+    #hero-modal h4 {
+        color: white;
+        text-shadow: 0px 0px 10px #e3e3e3;
+        font-size: 2rem;
+    }
+    #hero-modal {
+
+    }
+</style>

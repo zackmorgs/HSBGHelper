@@ -1,0 +1,73 @@
+@page "/login";
+
+@rendermode InteractiveServer
+
+@using HSBGHelper.Server.Models;
+@using Microsoft.AspNetCore.Components.Forms
+
+@inject NavigationManager Navigation
+
+@code {
+    private Account account = new Account();
+    private EditContext? loginContext;
+
+    protected override void OnInitialized()
+    {
+        loginContext = new EditContext(account);
+    }
+
+    public void handleSubmit()
+    {
+        Console.WriteLine("Submit");
+        if (account.Username == "administrator" && account.Password == "password")
+        {
+            Console.WriteLine("successful login.");
+            Navigation.NavigateTo("/dashboard");
+        }
+        else
+        {
+            Console.WriteLine("No credentials or bad login");
+        }
+    }
+}
+
+<section>
+    <header class="hero">
+        <h1 class="text-2xl">Login</h1>
+    </header>
+</section>
+
+<section>
+    <EditForm FormName="loginForm"
+              EditContext="loginContext"
+              OnValidSubmit="handleSubmit"
+              class="px-4">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="my-2">
+            <label for="username">
+                Username
+            </label>
+            <InputText @bind-Value="account.Username"
+                       id="username"
+                       autocomplete="email"
+                       type="text"
+                       placeholder="username"
+                       class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+        </div>
+        <div class="my-2">
+            <label for="password">
+                Password
+            </label>
+            <InputText @bind-Value="account.Password"
+                       id="password"
+                       type="password"
+                       placeholder="password"
+                       autocomplete="current-password"
+                       class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+        </div>
+        <button type="submit" class="btn btn-primary mb-4">
+            Login
+        </button>
+    </EditForm>
+</section>

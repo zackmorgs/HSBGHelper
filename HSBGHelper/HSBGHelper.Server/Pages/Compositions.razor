@@ -1,0 +1,74 @@
+﻿@page "/compositions"
+
+
+@using HSBGHelper.Client.Components
+
+@code {
+    private List<Composition> compositions;
+
+    protected override void OnInitialized()
+    {
+        compositions = new List<Composition>
+        {
+            new Composition { Tier = "S-Tier", Name = "Mooneater", Difficulty = "Medium", Link = "/compositions/mooneater", Image="/img/compositions/mooneater.jpg" },
+            new Composition { Tier = "S-Tier", Name = "Rock Rock Elementals", Difficulty = "Hard", Link = "/compositions/rock-rock-elementals", Image="/img/compositions/rock-rock.jpg" },
+            new Composition { Tier = "A-Tier", Name = "Atrocity", Difficulty = "Medium", Link = "/compositions/atrocity", Image="/img/compositions/atrocity.jpg" },
+            new Composition { Tier = "A-Tier", Name = "Murlocs", Difficulty = "Medium", Link = "/compositions/murlocs", Image="/img/compositions/murlocs.jpg" },
+            new Composition { Tier = "A-Tier", Name = "Goldrinn Beasts", Difficulty = "Easy", Link = "/compositions/goldrinn-beasts", Image="/img/compositions/goldrin.jpg" },
+            new Composition { Tier = "A-Tier", Name = "Dragons - Start of Combat", Difficulty = "Medium", Link = "/compositions/dragons-soc", Image="/img/compositions/persistent-poet.jpg" },
+            new Composition { Tier = "A-Tier", Name = "Deep Blue Zesty", Difficulty = "Easy", Link = "/compositions/deep-blue-zesty", Image="/img/compositions/deep-blue.jpg" },
+            new Composition { Tier = "A-Tier", Name = "Pirates - Tethys", Difficulty = "Hard", Link = "/compositions/pirates-tethys", Image="/img/compositions/tethys.jpg" },
+            new Composition { Tier = "A-Tier", Name = "Poison Scam", Difficulty = "Medium", Link = "/compositions/poison-scam", Image="/img/compositions/scam.jpg" },
+            new Composition { Tier = "A-Tier", Name = "KT Nightbane", Difficulty = "Medium", Link = "/compositions/kt-nightbane", Image="/img/compositions/nightbane.jpg" },
+            new Composition { Tier = "A-Tier", Name = "Mechs - Magnetic", Difficulty = "Medium", Link = "/compositions/mechs-magnetic", Image="/img/compositions/beatboxer.jpg" },
+            new Composition { Tier = "A-Tier", Name = "Mechs - Divine Shield", Difficulty = "Medium", Link = "/compositions/mechs-divine-shield", Image="/img/compositions/mechs-divine-shield.jpg" },
+            new Composition { Tier = "A-Tier", Name = "Ghoul-acabra", Difficulty = "Easy", Link = "/compositions/ghoul-acabra", Image="/img/compositions/ghoul-acabra.jpg" },
+            new Composition { Tier = "B-Tier", Name = "Quilboars - End of Turn", Difficulty = "Easy", Link = "/compositions/quilboars-eot", Image="/img/compositions/quilboars-end-of-turn.jpg" },
+            new Composition { Tier = "B-Tier", Name = "Azerite Elementals", Difficulty = "Medium", Link = "/compositions/azerite-elementals", Image="/img/compositions/azerite.jpg" },
+            new Composition { Tier = "B-Tier", Name = "Dragons - Kalecgos", Difficulty = "Hard", Link = "/compositions/dragons-kalecgos", Image="/img/compositions/kalecgos.jpg" },
+            new Composition { Tier = "B-Tier", Name = "Undead - KT Summoner", Difficulty = "Medium", Link = "/compositions/undead-kt-summoner", Image="/img/compositions/eternal-summoner.jpg" },
+            new Composition { Tier = "B-Tier", Name = "Undead - KT Moroes", Difficulty = "Easy", Link = "/compositions/undead-kt-moroes", Image="/img/compositions/moroes.jpg" },
+            new Composition { Tier = "B-Tier", Name = "Demons - Self Damage", Difficulty = "Medium", Link = "/compositions/demons-self-damage", Image="/img/compositions/demons-self-damage.jpg" },
+            new Composition { Tier = "B-Tier", Name = "Nalaa Menagerie", Difficulty = "Medium", Link = "/compositions/nalaa-menagerie", Image="/img/compositions/nalaa.jpg" },
+            new Composition { Tier = "B-Tier", Name = "Beasts - Self Damage", Difficulty = "Easy", Link = "/compositions/beasts-self-damage", Image="/img/compositions/beasts-self-damage.jpg" },
+            new Composition { Tier = "B-Tier", Name = "Demons - Shop Buff", Difficulty = "Medium", Link = "/compositions/demons-shop-buff", Image="/img/compositions/demons-shop-buff.jpg" },
+            new Composition { Tier = "F-Tier", Name = "Pirates - Eliza", Difficulty = "Easy", Link = "/compositions/pirates-eliza", Image="/img/compositions/pirates-eliza.jpg" },
+            new Composition { Tier = "F-Tier", Name = "Undead - Attack Scaling", Difficulty = "Medium", Link = "/compositions/undead-attack-scaling", Image="/img/compositions/undead-attack-scaling.jpg" },
+            new Composition { Tier = "F-Tier", Name = "Naga - Lord of Gains", Difficulty = "Medium", Link = "/compositions/naga-lord-of-gains", Image="/img/compositions/naga-lord-of-gains.jpg" }
+        };
+    }
+
+    private List<Composition> GetCompositionsByTier(string tier)
+    {
+        return compositions.Where(c => c.Tier == tier).ToList();
+    }
+}
+
+<header id="hero-compositions" class="hero">
+    <img src="/img/icons/bg-icon.png" class="mx-auto" />
+    <h2 class="text-3xl">Compositions</h2>
+</header>
+
+<div class="container mx-auto px-4">
+    @foreach (var tier in new[] { "S-Tier", "A-Tier", "B-Tier", "F-Tier" })
+    {
+        <section class="compositions-tier @tier.ToLower()">
+            <h3 class="text-2xl">@tier</h3>
+            <hr />
+            <ul class="compositions grid grid-cols-1 gap-4 md:grid-cols-2 md:grid-gap-4 lg:grid-cols-3">
+                @foreach (var comp in GetCompositionsByTier(tier))
+                {
+                    <li>
+                        <a href="@comp.Link" class="composition bg-cover" style="background-image:url('@comp.Image')">
+                            @* <img src="@comp.Image" alt="@comp.Name" /> *@
+                            <div class="text">
+                                <h3 class="text-xl">@comp.Name</h3>
+                                <Difficulty difficulty="@comp.Difficulty" />
+                            </div>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+</div>

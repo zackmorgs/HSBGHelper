@@ -1,0 +1,158 @@
+@page "/admin/edit-hero/{Id:int}";
+
+@using HSBGHelper.Server.Data
+@using HSBGHelper.Server.Models;
+@using HSBGHelper.Server.Services;
+@using Microsoft.AspNetCore.Components;
+
+@using AntDesign.Icons;
+
+@* @using Microsoft.AspNetCore.Components.Forms *@
+
+@rendermode InteractiveServer
+
+@inject HeroService heroService;
+@inject NavigationManager navigationManager;
+
+<section>
+    <header class="hero">
+        <div class="container mx-auto">
+            <div class="container flex justify-between align-center mx-auto">
+                @if (hero.Id == 1)
+                {
+                    <a disabled></a>
+                }
+                else
+                {
+                    <a href="/admin/edit-hero/@(hero.Id - 1)" class="flex align-center justify-center">
+                        <LeftOutlined />
+                    </a>
+                }
+
+                <div class="title">
+                    <h2 class="text-2xl">Edit Hero</h2>
+                    <h2 class="text-xl">@hero.Name</h2>
+                </div>
+
+                @if (heroCount == hero.Id)
+                {
+                    <a href="/heroes" disabled></a>
+                }
+                else
+                {
+                    <a href="/admin/edit-hero/@(hero.Id + 1)">
+                        <RightOutlined />
+                    </a>
+                }
+
+            </div>
+
+        </div>
+    </header>
+</section>
+<section>
+    <div class="container mx-auto">
+        <img class="mx-auto" src="@hero.Image" alt="@hero.Name">
+    </div>
+</section>
+<section>
+    <div class="container mx-auto">
+        <div class="px-4 mb-4">
+            <h3 class="text-2xl">Basic Info</h3>
+            <hr />
+        </div>
+        <div class="flex flex-col justify-between">
+            <div class="px-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Armor</label>
+                <input type="number" class="border rounded px-2 py-1 w-full"
+                    @onchange="async (e) => await OnArmorChanged(hero, e)" value="@hero.Armor" />
+            </div>
+            <div class="my-4 px-4 flex flex-row justify-between">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Tier HSReplay</label>
+                    <select value="@hero.TierHSReplay" class="border rounded px-2 py-1 block"
+                        @onchange="async (e) => await OnTierHSReplayChanged(hero, e)">
+                        @foreach (var tier in Tiers)
+                        {
+                            <option value="@tier">@tier</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Tier Jeef</label>
+                    <select value="@hero.TierJeef" class="border rounded px-2 py-1 block"
+                        @onchange="async (e) => await OnTierJeefChanged(hero, e)">
+                        @foreach (var tier in Tiers)
+                        {
+                            <option value="@tier">@tier</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="px-4 mb-4">
+            <h3 class="text-2xl">Guide</h3>
+            <hr />
+            <textarea id="edit-hero-html" class="w-full p-4" @bind="@hero.HtmlGuide"
+                @oninput="async (e) => await handleHtmlGuideChange(hero, e)" />
+            <button class="btn btn-primary">
+                Save
+            </button>
+        </div>
+    </div>
+</section>
+@code {
+    private Hero hero = new Hero();
+    private List<String> Tiers = new List<string> { "S", "A", "B", "C", "D", "F", "" };
+    private int heroCount = 0;
+
+    [Parameter]
+    public int Id { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        heroCount = await heroService.GetHeroCount();
+        hero = await heroService.GetHeroById(Id);
+        StateHasChanged();
+    }
+
+
+    private async Task OnTierHSReplayChanged(Hero hero, ChangeEventArgs e)
+    {
+        Console.WriteLine(hero.Name, e.Value.ToString());
+        hero.TierHSReplay = e.Value.ToString();
+        await heroService.SetHeroHSReplayTier(hero.Id, hero.TierHSReplay);
+        StateHasChanged();
+    }
+
+    private async Task OnTierJeefChanged(Hero hero, ChangeEventArgs e)
+    {
+        Console.WriteLine(hero.Name, e.Value.ToString());
+        hero.TierJeef = e.Value.ToString();
+        await heroService.SetHeroJeefTier(hero.Id, hero.TierJeef);
+        StateHasChanged();
+    }
+
+    private async Task OnArmorChanged(Hero hero, ChangeEventArgs e)
+    {
+        Console.WriteLine(hero.Name);
+        hero.Armor = Convert.ToInt32(e.Value.ToString());
+        await heroService.SetHeroArmor(hero.Id, hero.Armor);
+        StateHasChanged();
+    }
+    private async Task handleHtmlGuideChange(Hero hero, ChangeEventArgs e)
+    {
+        hero.HtmlGuide = e.Value.ToString();
+        if (hero.HtmlGuide != null)
+        {
+            await heroService.SetHeroHtmlGuide(hero.Id, hero.HtmlGuide);
+        } else {
+            return;
+        }
+    }
+}
+
+<style>
+    #edit-hero-html {
+        min-height: 25rem;
+    }
+</style>

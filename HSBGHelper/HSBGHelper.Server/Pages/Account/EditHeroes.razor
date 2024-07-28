@@ -1,0 +1,95 @@
+@page "/admin/edit-heroes";
+
+@using HSBGHelper.Server.Data
+@using HSBGHelper.Server.Models;
+@using HSBGHelper.Server.Services;
+@* @using Microsoft.AspNetCore.Components.Forms *@
+
+@rendermode InteractiveServer
+
+@inject HeroService heroService;
+
+<section>
+    <header class="hero">
+        <h1 class="text-2xl">Edit Heroes</h1>
+    </header>
+</section>
+<section>
+    <div class="container mx-auto">
+        <table class="table-auto w-full shadow-lg rounded-lg">
+            <thead>
+                <tr>
+                    <th scope="col" class="px-4 py-2 text-left font-medium text-gray-700 text-xl">Name</th>
+                    <th scope="col" class="px-4 py-2 text-left font-medium text-gray-700 text-xl">Armor</th>
+                    <th scope="col" class="px-4 py-2 text-left font-medium text-gray-700 text-xl">TierHSReplay</th>
+                    <th scope="col" class="px-4 py-2 text-left font-medium text-gray-700 text-xl">TierJeef</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var hero in heroes)
+                {
+                    <tr class="border-t border-gray-200">
+                        <td class="px-4 py-2 flex justify-between   ">@hero.Name <a class="color-blue" href="/admin/edit-hero/@hero.Id">Edit</a></td>
+                        <td class="px-4 py-2">
+                            <input type="number" class="border rounded px-2 py-1 w-full" @onchange="async (e) => await OnArmorChanged(hero, e)" value="@hero.Armor"/>
+                            @* <input type="number" class="border rounded px-2 py-1 w-full" *@
+                                @* @onchange="async (e) => await OnArmorChanged(hero, e)" /> *@
+                        </td>
+                        <td class="px-4 py-2">
+                            <select value="@hero.TierHSReplay" class="border rounded px-2 py-1"
+                                @onchange="async (e) => await OnTierHSReplayChanged(hero, e)">
+                                @foreach (var tier in Tiers)
+                                {
+                                    <option value="@tier">@tier</option>
+                                }
+                            </select>
+                        </td>
+                        <td class="px-4 py-2">
+                            <select value="@hero.TierJeef" class="border rounded px-2 py-1"
+                                @onchange="async (e) => await OnTierJeefChanged(hero, e)">
+                                @foreach (var tier in Tiers)
+                                {
+                                    <option value="@tier">@tier</option>
+                                }
+                            </select>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    private List<Hero> heroes = new List<Hero>();
+    private List<String> Tiers = new List<string> { "S", "A", "B", "C", "D", "F", "" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        heroes = await heroService.GetHeroes();
+    }
+
+    private async Task OnTierHSReplayChanged(Hero hero, ChangeEventArgs e)
+    {
+        Console.WriteLine(hero.Name, e.Value.ToString());
+        hero.TierHSReplay = e.Value.ToString();
+        await heroService.SetHeroHSReplayTier(hero.Id, hero.TierHSReplay);
+        StateHasChanged();
+    }
+
+    private async Task OnTierJeefChanged(Hero hero, ChangeEventArgs e)
+    {
+        Console.WriteLine(hero.Name, e.Value.ToString());
+        hero.TierJeef = e.Value.ToString();
+        await heroService.SetHeroJeefTier(hero.Id, hero.TierJeef);
+        StateHasChanged();
+    }
+
+    private async Task OnArmorChanged(Hero hero, ChangeEventArgs e)
+    {
+        Console.WriteLine(hero.Name);
+        hero.Armor = Convert.ToInt32(e.Value.ToString());
+        await heroService.SetHeroArmor(hero.Id, hero.Armor);
+        StateHasChanged();
+    }
+}

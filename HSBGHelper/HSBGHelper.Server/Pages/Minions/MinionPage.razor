@@ -1,0 +1,69 @@
+@page "/minions/{Id:int}"
+
+@using HSBGHelper.Server.Models;
+@using HSBGHelper.Server.Services;
+
+@inject NavigationManager navigationManager;
+@inject MinionService minionService;
+
+<section>
+    <header class="hero hero-minion">
+        <img src="@minion.Image" alt="@minion.Name" class="mx-auto minion-page-image" />
+        <h2 id="minion-title" class="text-3xl text-center">@minion.Name</h2>
+        <h2 id="minion-type"><b>Type:</b> @minion.Type</h2>
+    </header>
+</section>
+
+<section class="mt-4">
+    <div class="container mx-auto">
+        <div class="p-4">
+            <h3 class="text-xl">Guide</h3>
+            <hr />
+            <div class="py-4">
+                @if (minion.HtmlGuide != "")
+                {
+                    <div class="markdown">
+                        @(new MarkupString(minion.HtmlGuide))
+                    </div>
+                }
+                else
+                {
+                    <p>There is no guide for this minion yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Minion minion { get; set; }
+
+    protected override async void OnInitialized()
+    {
+        try
+        {
+            minion = await minionService.GetMinionById(Id);
+        }
+        catch (Exception ex)
+        {
+            if (minion == null)
+            {
+                navigationManager.NavigateTo("/404");
+                return;
+            }
+        }
+    }
+}
+<style>
+    #minion-title,
+    #minion-type {
+        text-shadow: 0px 0px 10px white;
+    }
+
+    @*.hero-minion{background-color:black;}*@.minion-page-image {
+        filter: drop-shadow(rgba(0, 0, 0, 0.6) 0px 3px 3px);
+    }
+</style>

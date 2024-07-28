@@ -1,0 +1,80 @@
+@page "/admin/edit-minion/{id:int}";
+
+@using HSBGHelper.Server.Models;
+@using HSBGHelper.Server.Services;
+@using Microsoft.AspNetCore.Components;
+
+@rendermode InteractiveServer
+
+@inject MinionService minionService;
+@inject NavigationManager navigationManager;
+
+@if (minion != null)
+{
+    <section>
+        <header class="hero">
+            <h2 class="text-3xl">Edit Minion</h2>
+            <h2 class="text-2xl">@minion.Name</h2>
+        </header>
+    </section>
+    <section>
+        <div class="container mx-auto">
+            <div class="p-4">
+                <div class="minion-img">
+                    <img src="@minion.Image" alt="@minion.Name" class="mx-auto" />
+                </div>
+            </div>
+        </div>
+    </section>
+    <section>
+        <div class="container mx-auto">
+            <div class="p-4">
+                <div class="flex flex-col">
+                    <label for="minion-tier">Tier</label>
+                    <select name="minion-tier-list" id="minion-tier" class="border rounded" @onchange="async (e) => await OnTierChange(minion, e)">
+                        @foreach (var tier in Tiers)
+                        {
+                            <option value="@tier" selected="@(minion.Tier == tier)">@tier</option>
+                        }
+                    </select>
+                </div>
+                <div class="flex flex-col py-4">
+                    <label for="minion-html">Guide</label>
+                    <textarea id="minion-html" class="w-full p-4 border rounded mb-4" @bind="minion.HtmlGuide" ></textarea>
+                    <button class="btn btn-primary" @onclick="SaveHtmlGuide">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    public Minion minion { get; set; }
+    private List<int> Tiers = new List<int> { 1, 2, 3, 4, 5, 6, 7 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        minion = await minionService.GetMinionById(Id);
+        if (minion == null)
+        {
+            navigationManager.NavigateTo("/404");
+        }
+    }
+
+    private async Task OnTierChange(Minion minion, ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value.ToString(), out int newTier))
+        {
+            minion.Tier = newTier;
+            await minionService.SetTierById(minion.Id, minion.Tier);
+        }
+    }
+
+    private async void SaveHtmlGuide()
+    {
+        await minionService.SetHtmlGuideById(minion.Id, minion.HtmlGuide);
+    }
+}

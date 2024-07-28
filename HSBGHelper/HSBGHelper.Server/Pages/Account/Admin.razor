@@ -1,0 +1,39 @@
+@page "/admin/"
+
+@using AntDesign.Icons;
+
+@code {
+
+}
+
+<section>
+    <header class="hero">
+        <h2 class="text-3xl">Admin</h2>
+    </header>
+</section>
+<section>
+    <nav class="container mx-auto">
+        <ul class="p-4">
+            <li>
+                <a class="btn btn-secondary mb-4" href="/admin/edit-heroes">
+                    <span>Edit Heroes</span> <RightOutlined />
+                </a>
+            </li>
+            <li>
+                <a class="btn btn-secondary mb-4" href="/admin/edit-buddies">
+                    <span>Edit Buddies</span> <RightOutlined />
+                </a>
+            </li>
+            <li>
+                <a class="btn btn-secondary mb-4" href="/admin/edit-minions">
+                    <span>Edit Minions</span> <RightOutlined />
+                </a>
+            </li>
+            <li>
+                <a class="btn btn-secondary mb-4" href="/admin/edit-spells">
+                    <span>Edit Spells</span> <RightOutlined />
+                </a>
+            </li>
+        </ul>
+    </nav>
+</section>

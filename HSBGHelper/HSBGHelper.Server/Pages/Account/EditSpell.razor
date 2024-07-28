@@ -1,0 +1,70 @@
+@page "/admin/edit-spell/{id:int}";
+
+@using HSBGHelper.Server.Models;
+@using HSBGHelper.Server.Services;
+
+@inject SpellService spellService;
+@inject NavigationManager navigationManager;
+
+@if (spell != null)
+{
+    <section>
+        <header class="hero">
+            <h2 class="text-3xl">Edit Spell</h2>
+            <h2 class="text-2xl">@spell.Name</h2>
+        </header>
+    </section>
+    <section>
+        <div class="container">
+            <div class="p-4">
+                <div class="spell-img">
+                    <img src="@spell.Image" alt="@spell.Name" />
+                </div>
+                <div class="flex flex-col">
+                    <label for="spell-tier">
+                        Tier
+                    </label>
+                    <select name="spell-tier-list" id="spell-tier" class="border rounded" @onchange="async (e) => await OnTierChange(spell, e)">
+                        @foreach(var tier in Tiers)
+                        {
+                            <option value="@tier" selected="@(spell.Tier == tier)">@tier</option>
+                        }
+                    </select>
+                </div>
+                <flex class="flex-col">
+                    <label for="spell-html">
+                        Guide
+                    </label>
+                    <TextArea id="spell-html" class="w-full p-4 border rounded" @bind="@spell.HtmlGuide" @onchange="async (e) => await handleHtmlGuideChange(spell, e)" ></TextArea>
+                </flex>
+            </div>
+        </div>
+    </section>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    public Spell spell { get; set; }
+    private List<int> Tiers = new List<int> { 1, 2, 3, 4, 5, 6, 7 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        spell = await spellService.GetSpellById(Id);
+        if (spell==null)
+        {
+            navigationManager.NavigateTo("/404");
+        }
+    }
+
+    private Task OnTierChange(Spell spell, ChangeEventArgs e)
+    {
+        spell.Tier = int.Parse(e.Value.ToString());
+        return spellService.SetSpellTierById(spell.Id, spell.Tier);
+    }
+
+    private Task handleHtmlGuideChange(Spell spell, ChangeEventArgs e)
+    {
+        spell.HtmlGuide = e.Value.ToString();
+        return spellService.SetHtmlGuideById(spell.Id, spell.HtmlGuide);
+    }
+}

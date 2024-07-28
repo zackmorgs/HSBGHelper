@@ -1,0 +1,105 @@
+@using HSBGHelper.Server.Data;
+@using HSBGHelper.Server.Models;
+@using HSBGHelper.Server.Services;
+@using HSBGHelper.Client.Components;
+@using System.Collections.Generic;
+
+@rendermode InteractiveServer
+
+@page "/spells"
+
+@inject SpellService spellService;
+
+<section>
+    <header class="hero">
+        <h3 class="text-3xl">Spells (@spells.Count)</h3>
+    </header>
+</section>
+<section>
+    <div id="controls" class="mx-auto flex flex-col md:flex-row px-4 justify-center">
+        <ul class="tiers flex flex-row justify-between mb-4">
+            @foreach (var tier in tiers)
+            {
+                <li class="flex align-center justify-center tier @(tier == selectedTier ? "selected" : "")" @onclick="() => HandleTierClick(tier)">
+                    <span>@tier</span>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+<section>
+    <div class="container mx-auto">
+        <ul class="spells mb-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+            @foreach (Spell spell in filteredSpells)
+            {
+                <SpellCard Name="@spell.Name" Image="@spell.Image" Id="@spell.Id" />
+            }
+        </ul>
+    </div>
+</section>
+
+
+@code {
+    private List<Spell> spells = new List<Spell>();
+    private List<Spell> filteredSpells = new List<Spell>();
+    private List<string> tiers = new List<string>();
+    private bool spellsLoaded = false;
+    private string selectedTier = "All";
+    protected override async Task OnInitializedAsync()
+    {
+        tiers = new List<String> { "All", "1", "2", "3", "4", "5", "6" };
+        spells = await spellService.GetSpells();
+        filteredSpells = spells;
+        spellsLoaded = true;
+    }
+
+    public async Task HandleTierClick(string Tier)
+    {
+        selectedTier = Tier;
+        // Ensure the selectedTier is not null or empty
+        if (selectedTier.ToString() == "All")
+        {
+            filteredSpells = spells.ToList(); // Show all spells if no tier is selected
+            return;
+        }
+        else
+        {
+            IEnumerable<Spell> spellQuery = spells;
+
+            spellQuery = spellQuery.Where(m => m.Tier.ToString() == selectedTier);
+
+            filteredSpells = spellQuery.ToList();
+        }
+    }
+}
+
+<style>
+    #controls {
+        max-width: 32rem;
+    }
+    .tier {
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius:50%;
+        transition: background-color 0.3s;
+        width: 2.5rem;
+        height: 2.5rem;
+        text-align: center;
+
+    }
+
+    .tier.selected {
+        color: white;
+        background-color: #b90a0a ;
+        text-shadow: 0px 0px 10px #ffffff9c;
+        box-shadow: 0px 0px 10px #ffffff9c;
+    }
+
+    .spells {
+        border-radius: 0.5rem;
+        box-shadow: inset 1px 4px 7px #00000029;
+        padding: 1rem;
+        margin: 1rem;
+        background-color: #ffffff47;
+    }
+</style>

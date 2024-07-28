@@ -1,0 +1,73 @@
+@using AntDesign.Icons;
+
+@code {
+    [Parameter]
+    public int Id
+    {
+        get;
+        set;
+    }
+
+    [Parameter]
+    public string Name
+    {
+        get;
+        set;
+    }
+
+    [Parameter]
+    public string Image
+    {
+        get;
+        set;
+    }
+    public bool ShowModal {get; set; } = false;
+
+    public void ToggleModalClick()
+    {
+        ShowModal = !ShowModal;
+    }
+}
+
+<li>
+    <a class="minion-card" @onclick="@ToggleModalClick">
+        <img class="minion-img" src="@Image" alt="@Name" />
+    </a>
+</li>
+
+@if (ShowModal)
+{
+    <div id="minion-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center z-10" onclick="@ToggleModalClick">
+        <div class="w-full relative">
+            <div class="flex flex-col items-center">
+                <img class="minion-img" src="@Image" alt="@Name"/>
+            </div>
+            <div class="flex align-center justify-center">
+                <a href="/minions/@Id" class="btn btn-primary">
+                    <span>View Minion Stats</span> <RightOutlined />
+                </a>
+            </div>
+        </div>
+    </div>
+}
+<style>
+    .minion-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: inherit;
+        transition: transform 0.3s ease;
+    }
+    .minion-card:hover {
+        cursor: pointer;
+        transform:scale(1.1);
+    }
+    .minion-img {
+        filter: drop-shadow(rgba(0, 0, 0, 0.6) 0px 3px 3px);
+    }
+    #minion-modal {
+        overflow-y:hidden;
+    }
+</style>

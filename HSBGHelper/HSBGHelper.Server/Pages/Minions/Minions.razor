@@ -1,0 +1,153 @@
+﻿@using HSBGHelper.Server.Data
+@using HSBGHelper.Server.Models
+@using HSBGHelper.Client.Components
+@using System.Collections.Generic
+
+@rendermode InteractiveServer
+
+@page "/minions"
+
+@inject HSBGDb dbContext
+
+@if (heroesLoaded) {
+    <section>
+        <header class="hero">
+            <h3 class="text-2xl">Minions</h3>
+        </header>
+    </section>
+    <section class="px-4 text-center">
+        <div id="controls" class="mx-auto flex flex-col md:flex-row">
+            <select id="types" class="block w-full mb-4 md:mr-4" @onchange="HandleTypesChange">
+                @foreach (var type in types)
+                {
+                    <option value="@type">
+                        @type
+                    </option>
+                }
+            </select>
+            <ul class="tiers flex flex-row justify-between mb-4">
+                @foreach (var tier in tiers)
+                {
+                    <li class="tier @(tier == selectedTier ? "selected" : "") flex align-center justify-center" @onclick="() => HandleTierClick(tier)">
+                        <span>@tier</span>
+                    </li>
+                }
+            </ul>
+
+
+        </div>
+        <div class="container mx-auto">
+            <ul class="minions mb-4 minions mb-4 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                @foreach (var minion in filteredMinions)
+                {
+                    <MinionCard name="@minion.Name" Image="@minion.Image" Id="@minion.Id" />
+                }
+            </ul>
+        </div>
+    </section>
+}
+else
+{
+    <div id="hero-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 backdrop-blur-sm flex justify-center items-center z-10">
+        <div class="max-w-screen-lg w-full max-h-screen overflow-auto relative">
+            <div class="flex flex-col items-center">
+                <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+    private List<Minion> minions { get; set; } = new List<Minion>();
+    private List<Minion> filteredMinions { get; set; } = new List<Minion>();
+    private List<string> tiers { get; set; } = new List<string>();
+    private string selectedTier { get; set; } = "All";
+    private string selectedType { get; set; } = "All";
+    private List<string> types { get; set; } = new List<string>();
+    
+    private bool heroesLoaded { get; set; } = false;
+    public void HandleTierClick(string tier)
+    {
+        selectedTier = tier;
+        FilterMinions();
+    }
+
+    public void HandleTypesChange(ChangeEventArgs e)
+    {
+        selectedType = e.Value.ToString();
+        FilterMinions();
+    }
+
+    private void FilterMinions()
+    {
+        IEnumerable<Minion> query = minions;
+
+        if (selectedTier != "All")
+        {
+            query = query.Where(m => m.Tier.ToString() == selectedTier);
+        }
+
+        if (selectedType != "All")
+        {
+            query = query.Where(m => m.Type == selectedType);
+        }
+
+        filteredMinions = query.ToList();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMinions();
+    }
+    private async Task LoadMinions()
+    {
+        // Initialize tiers and types
+        tiers = new List<string> { "All", "1", "2", "3", "4", "5", "6", "7" };
+        types = new List<string> { "All", "Beast", "Demon", "Dragon", "Elemental", "Mech", "Murloc", "Pirate", "Quilboar", "Undead", "Neutral"};
+
+        // Load the list of minions
+        minions = dbContext.Minions.ToList();
+
+        // Initially show all minions
+        filteredMinions = minions;
+
+        heroesLoaded = true;
+    }
+}
+
+<style>
+    #controls {
+        max-width: 32rem;
+    }
+
+    #types {
+        padding: 0.25rem;
+        border-radius: 0.25rem;
+    }
+
+    .tier {
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: background-color 0.3s;
+        width: 2.5rem;
+        height: 2.5rem;
+        text-align: center;
+    }
+
+    .tier.selected {
+        color: white;
+
+        background-color:#b90a0a;
+        text-shadow:0px 0px 10px #ffffff9c;
+        box-shadow: 0px 0px 10px #ffffff9c;
+    }
+
+    .minions {
+        border-radius: 0.5rem;
+        box-shadow: inset 1px 4px 7px #00000029;
+        padding: 0.25rem;
+        background-color: #ffffff47;
+    }
+</style>

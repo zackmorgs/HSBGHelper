@@ -1,0 +1,318 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+@font-face {
+    font-family: 'belwebold';
+    src: url('/font/belwe_bold-webfont.woff2') format('woff2'), url('/font/belwe_bold-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+:root {
+    font-size: 16px;
+    font-family: "Open Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-style: normal;
+    font-variation-settings: "wdth" 100;
+}
+
+body {
+    font-family: "Open Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-style: normal;
+    font-variation-settings: "wdth" 100;
+    margin: 0;
+    background: #222;
+    color: white;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+    font-family: 'belwebold';
+}
+
+.page {
+    background-color: #ead5aa;
+    color: black;
+    position: relative;
+}
+
+.lds-roller {
+    /* change color here */
+    color: #1c4c5b
+  }
+  .lds-roller,
+  .lds-roller div,
+  .lds-roller div:after {
+    box-sizing: border-box;
+  }
+  .lds-roller {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+  }
+  .lds-roller div {
+    animation: lds-roller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    transform-origin: 40px 40px;
+  }
+  .lds-roller div:after {
+    content: " ";
+    display: block;
+    position: absolute;
+    width: 7.2px;
+    height: 7.2px;
+    border-radius: 50%;
+    background: white;
+    margin: -3.6px 0 0 -3.6px;
+  }
+  .lds-roller div:nth-child(1) {
+    animation-delay: -0.036s;
+  }
+  .lds-roller div:nth-child(1):after {
+    top: 62.62742px;
+    left: 62.62742px;
+  }
+  .lds-roller div:nth-child(2) {
+    animation-delay: -0.072s;
+  }
+  .lds-roller div:nth-child(2):after {
+    top: 67.71281px;
+    left: 56px;
+  }
+  .lds-roller div:nth-child(3) {
+    animation-delay: -0.108s;
+  }
+  .lds-roller div:nth-child(3):after {
+    top: 70.90963px;
+    left: 48.28221px;
+  }
+  .lds-roller div:nth-child(4) {
+    animation-delay: -0.144s;
+  }
+  .lds-roller div:nth-child(4):after {
+    top: 72px;
+    left: 40px;
+  }
+  .lds-roller div:nth-child(5) {
+    animation-delay: -0.18s;
+  }
+  .lds-roller div:nth-child(5):after {
+    top: 70.90963px;
+    left: 31.71779px;
+  }
+  .lds-roller div:nth-child(6) {
+    animation-delay: -0.216s;
+  }
+  .lds-roller div:nth-child(6):after {
+    top: 67.71281px;
+    left: 24px;
+  }
+  .lds-roller div:nth-child(7) {
+    animation-delay: -0.252s;
+  }
+  .lds-roller div:nth-child(7):after {
+    top: 62.62742px;
+    left: 17.37258px;
+  }
+  .lds-roller div:nth-child(8) {
+    animation-delay: -0.288s;
+  }
+  .lds-roller div:nth-child(8):after {
+    top: 56px;
+    left: 12.28719px;
+  }
+  @keyframes lds-roller {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+#home {
+    color: white;
+    text-decoration: none;
+}
+
+    #home:visited {
+        color: white;
+        text-decoration: none;
+    }
+
+.hero {
+    margin-top: 5rem;
+    margin-bottom:1rem;
+    padding: 1rem;
+    text-align: center;
+    background-color:hsl(0deg 64.41% 23.14%);
+    color:white;
+}
+.hero h1 {
+  color:#b90a0a;
+}
+.hero h2 {
+  color: white; 
+}
+    /* .hero .text-2xl {
+        background: #c10000;
+        color: white;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+    } */
+  .hero p {
+    color: #c10000;
+    color:#272020;
+  }
+    .hero p a {
+        color: blue;
+        text-decoration: underline;
+    }
+
+#hs-logo-homepage {
+    margin: 0 auto;
+}
+
+
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content:center;
+    padding: 0.5rem 1rem;
+    background: grey;
+    color: white;
+    text-align:center;
+    transition:transform 0.3s ease;
+}
+.btn:hover {
+    cursor: pointer;
+    transform:scale(1.05);
+}
+.btn-primary {
+    background-color: #b90a0a;
+    border-radius: 0.5rem;
+    border: 2px solid white;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.50);
+}
+.btn-secondary {
+    background-color: #26739f;
+    border-radius: 0.5rem;
+    border: 2px solid white;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+}
+hr {
+    border-bottom:1px solid black;
+}
+.compositions-tier hr {
+    border-top: 2px solid black;
+}
+
+.compositions-tier {
+    padding: 0.75rem;
+    background: grey;
+    margin: 0rem auto 1rem;
+    border-radius: 0.5rem;
+}
+
+    .compositions-tier.s-tier {
+        background-color: #9b51e0;
+    }
+
+    .compositions-tier.a-tier {
+        background-color: #00d084;
+    }
+
+    .compositions-tier.b-tier {
+        background-color: #0693e3;
+    }
+
+    .compositions-tier.f-tier {
+        background-color: #cf2e2e;
+    }
+
+.s-tier .compositions li a {
+    background-color: #ffffff30;
+}
+
+.a-tier .compositions li a {
+    background-color: #00000030;
+}
+
+.b-tier .compositions li a {
+    background-color: #0000002b;
+}
+
+.f-tier .compositions li a {
+    background-color: #00000066;
+}
+
+.composition {
+    display: block;
+    /* padding: 1.25rem 0.5rem 0.5rem; */
+    text-align: center;
+
+    margin-top: 1rem;
+    border-radius: 0.5rem;
+    position:relative;
+    height:20rem;
+    overflow:hidden;
+    border:2px solid white;
+}
+.composition img {
+    position:absolute;
+
+    right:0;
+    left:0;
+}
+.composition .text {
+    position:absolute;
+    bottom:0;
+    right:0;
+    left:0;
+    background: #ffffff0f;
+    backdrop-filter: blur(0.5rem);
+    padding-bottom:1rem;
+    padding-top:0.5rem;
+    color:white;
+    border-top:1px solid white;
+}
+.composition .text h3 {
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+}   
+
+footer {
+    background-color: #877550;
+    color:white;
+    padding:1rem 0rem;
+}
+
+@media (min-width: 576px) {
+}
+
+
+@media (min-width: 768px) {
+  .btn {
+    display:inline-flex;
+    min-width:12rem;
+  }
+}
+
+
+@media (min-width: 992px) {
+}
+
+
+@media (min-width: 1200px) {
+  .composition {
+    max-width:25rem;
+  }
+}
+
+@media (min-width: 1400px) {
+}

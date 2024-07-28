@@ -1,0 +1,254 @@
+﻿@page "/heroes"
+
+@using HSBGHelper.Server.Data
+@using HSBGHelper.Server.Models
+@using HSBGHelper.Client.Components
+@using AntDesign.Icons;
+
+@rendermode InteractiveServer
+
+@inject HSBGDb dbContext
+
+@code {
+    private List<Hero> heroes { get; set; } = new List<Hero>();
+    private List<Hero> filteredHeroes { get; set; } = new List<Hero>();
+    private List<string> tiers = new List<string> { "S", "A", "B", "C", "D", "F" };
+    private bool sortByJeef = true;
+    private bool alphabeticalSelected = false;
+    private bool tierSelected = true;
+    private bool armorSelected = false;
+    private bool alphabeticalAscending = false;
+    private bool tierAscending = true; // Default to ascending for Jeef's tier list
+    private bool armorAscending = false;
+
+    private Dictionary<string, int> tierOrder = new Dictionary<string, int>
+{
+{ "S", 1 },
+{ "A", 2 },
+{ "B", 3 },
+{ "C", 4 },
+{ "D", 5 },
+{ "F", 6 }
+};
+
+    protected override void OnInitialized()
+    {
+        heroes = dbContext.Heroes.ToList();
+        filteredHeroes = heroes;
+        sortByJeef = true;
+        tierAscending = false;
+
+        SortBy(); // Apply default sorting by Jeef's tier list
+    }
+
+    private void SortAlphabetical()
+    {
+        alphabeticalAscending = !alphabeticalAscending;
+        // Ensure other sorting options are deselected
+        alphabeticalSelected = true;
+        tierSelected = false;
+        armorSelected = false;
+
+        filteredHeroes = alphabeticalAscending
+        ? filteredHeroes.OrderBy(x => x.Name).ToList()
+        : filteredHeroes.OrderByDescending(x => x.Name).ToList();
+    }
+
+    private void SortArmor()
+    {
+        armorAscending = !armorAscending;
+        // Ensure other sorting options are deselected
+        armorSelected = true;
+        alphabeticalSelected = false;
+        tierSelected = false;
+
+        filteredHeroes = armorAscending
+        ? filteredHeroes.OrderBy(x => x.Armor).ToList()
+        : filteredHeroes.OrderByDescending(x => x.Armor).ToList();
+    }
+
+    private void SortBy()
+    {
+        sortByJeef = true;
+
+        tierAscending = !tierAscending;
+        // Ensure other sorting options are deselected
+        tierSelected = true;
+        alphabeticalSelected = false;
+        armorSelected = false;
+
+        filteredHeroes = sortByJeef
+        ? tierAscending
+        ? filteredHeroes.OrderBy(x => tierOrder.ContainsKey(x.TierJeef) ? tierOrder[x.TierJeef] : int.MaxValue).ToList()
+        : filteredHeroes.OrderByDescending(x => tierOrder.ContainsKey(x.TierJeef) ? tierOrder[x.TierJeef] :
+        int.MaxValue).ToList()
+        : tierAscending
+        ? filteredHeroes.OrderBy(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] : int.MaxValue).ToList()
+        : filteredHeroes.OrderByDescending(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] :
+        int.MaxValue).ToList();
+    }
+    private void SortByHSReplay()
+    {
+        sortByJeef = false;
+
+        tierAscending = !tierAscending;
+        // Ensure other sorting options are deselected
+        tierSelected = true;
+        alphabeticalSelected = false;
+        armorSelected = false;
+
+        filteredHeroes = sortByJeef
+        ? tierAscending
+        ? filteredHeroes.OrderBy(x => tierOrder.ContainsKey(x.TierJeef) ? tierOrder[x.TierJeef] : int.MaxValue).ToList()
+        : filteredHeroes.OrderByDescending(x => tierOrder.ContainsKey(x.TierJeef) ? tierOrder[x.TierJeef] :
+        int.MaxValue).ToList()
+        : tierAscending
+        ? filteredHeroes.OrderBy(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] : int.MaxValue).ToList()
+        : filteredHeroes.OrderByDescending(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] :
+        int.MaxValue).ToList();
+    }
+    private string GetActiveClass(bool isSelected)
+    {
+        return isSelected ? "active" : string.Empty;
+    }
+}
+<section>
+    <header class="hero">
+        <h3 class="text-2xl">Heroes</h3>
+    </header>
+</section>
+<section>
+    <div class="container mx-auto">
+        <div id="controls" class="mx-auto flex flex-col md:flex-row md:inline-flex justify-between">
+            <ul class="control-list flex justify-between items-center text-center">
+                <li @onclick="SortAlphabetical" class="@GetActiveClass(alphabeticalSelected)">
+                    <span>Alphabetical</span>
+                    @if (alphabeticalAscending)
+                    {
+                        <SortAscendingOutlined />
+                    }
+                    else
+                    {
+                        <SortDescendingOutlined />
+                    }
+                </li>
+                <li @onclick="SortArmor" class="@GetActiveClass(armorSelected)">
+                    <span>Armor</span>
+                    @if (armorAscending)
+                    {
+                        <SortAscendingOutlined />
+                    }
+                    else
+                    {
+                        <SortDescendingOutlined />
+                    }
+                </li>
+            </ul>
+            <div id="tier-list" class="p-4 flex flex-col md:flex-row items-center justify-between   ">
+                <b>Tierlist:</b>
+                <ul class="control-list flex flex-row justify-between text-center">
+                    <li @onclick="SortBy" class="@GetActiveClass(sortByJeef)">
+                        <span>Jeef's Tierlist</span>
+                        @if (tierAscending)
+                        {
+                            <SortAscendingOutlined />
+                        }
+                        else
+                        {
+                            <SortDescendingOutlined />
+                        }
+                    </li>
+                    <li @onclick="SortByHSReplay" class="@GetActiveClass(!sortByJeef)">
+                        <span>HSReplay's Tierlist</span>
+                        @if (tierAscending)
+                        {
+                            <SortAscendingOutlined />
+                        }
+                        else
+                        {
+                            <SortDescendingOutlined />
+                        }
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+<section>
+    <div class="container mx-auto">
+        <ul id="heroes" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 p-4 gap-2 content-center">
+            @if (sortByJeef)
+            {
+                @foreach (var hero in filteredHeroes)
+                {
+                    <HeroCard Name="@hero.Name" Image="@hero.Image" Id="@hero.Id" Tier="@hero.TierJeef" />
+                }
+            }
+            else
+            {
+                @foreach (var hero in filteredHeroes)
+                {
+                    <HeroCard Name="@hero.Name" Image="@hero.Image" Id="@hero.Id" Tier="@hero.TierHSReplay" />
+                }
+            }
+        </ul>
+    </div>
+</section>
+
+
+<style>
+    #heroes {
+        border-radius: 0.5rem;
+        box-shadow: inset 1px 4px 7px #00000029;
+        padding: 1rem;
+        margin: 1rem;
+        background-color: #ffffff47;
+    }
+
+    #controls {
+    @*margin:1rem;background-color:#ffffff47;*@border-radius: 0.5rem;
+    }
+
+    .control-list {
+        margin: 0.5rem; 
+    }
+
+    .control-list li {
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        background-color: #ffffff47;
+        margin: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    #tier-list li {
+        margin: 0;
+    }
+    #tier-list li:first-child {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    #tier-list li:not(:first-child, :last-child) {
+        border-radius: 0;
+    }
+    #tier-list li:last-child {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+    #controls li:hover {
+        background-color: #ffffff;
+    }
+
+    #controls li:active {
+        transform: scale(1.05);
+    }
+
+    #controls li.active {
+        background: linear-gradient(315deg, #232323, #0e0e0e);
+        color: white;
+    }
+</style>

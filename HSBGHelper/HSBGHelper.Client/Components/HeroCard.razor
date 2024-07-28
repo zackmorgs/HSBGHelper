@@ -1,0 +1,109 @@
+@using AntDesign.Icons;
+@using HSBGHelper.Client.Components;
+
+@code {
+    [Parameter]
+    public int Id { 
+        get; 
+        set; 
+    }
+
+    [Parameter]
+    public string Image
+    {
+        get;
+        set;
+    }
+    
+    [Parameter]
+    public string Name
+    {
+        get;
+        set;
+    }
+
+    [Parameter]
+    public string HeroPowerImage
+    {
+        get;
+        set;
+    }
+
+    [Parameter]
+    public string HeroPowerName
+    {
+        get;
+        set;
+    }
+    [Parameter]
+    public string tier {get; set;}
+
+    public bool ShowModal { get; set; } = false;
+
+    public void ToggleModalClick()
+    {
+        ShowModal = !ShowModal;
+    }
+}
+
+<li>
+    <a class="hero-card h-full" @onclick="@ToggleModalClick">
+        <TierBadge Tier="@tier" />
+        <img class="hero-img mx-auto" src="@Image" alt="@Name" />
+        <h4 class="hero-name text-center">@Name</h4>
+
+    </a>
+</li>
+@if (ShowModal)
+{
+    <div id="hero-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 backdrop-blur-sm flex justify-center items-center z-10"
+        onclick="@ToggleModalClick">
+        <div class="max-w-screen-lg w-full max-h-screen overflow-auto relative">
+            <div class="flex flex-col items-center">
+                <img class="hero-img" src="@Image" alt="@Name" />
+                <img class="hero-power-img" src=@HeroPowerImage alt="@HeroPowerName" />
+                <h4>@Name</h4>
+                <a href="/heroes/@Id"   class="btn btn-primary mt-4">View Hero <RightOutlined /></a>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .hero-card {
+        display:block;
+        padding: 1rem;
+        transition: all 0.3s;
+        border-radius:0.25rem;
+        position:relative;
+    }
+    .hero-img {
+        transition:transform 0.3s ease;
+
+    }
+    .hero-img:hover {
+        transform: scale(1.1);
+        cursor:pointer;
+    }
+    .hero-img {
+        filter: drop-shadow(rgba(0, 0, 0, 0.6) 0px 3px 3px);
+        max-width:90%;
+    }
+
+    .hero-name {
+        color: #412d2d;
+        filter: drop-shadow(rgba(0, 0, 0, 0.6) 0px 3px 3px);
+        line-height: 1.25rem;
+        z-index:2;
+    }
+
+    #hero-modal h4 {
+
+        color: white;
+        text-shadow: 0px 0px 10px #e3e3e3;
+        font-size: 2rem;
+    }
+    #hero-modal {
+
+    }
+</style>

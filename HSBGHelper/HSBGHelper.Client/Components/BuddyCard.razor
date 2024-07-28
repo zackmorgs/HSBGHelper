@@ -1,0 +1,50 @@
+@code {
+    [Parameter]
+    public int Id
+    {
+        get;
+        set;
+    }
+
+    [Parameter]
+    public string Name
+    {
+        get;
+        set;
+    }
+
+    [Parameter]
+    public string Image
+    {
+        get;
+        set;
+    }
+    public bool ShowModal {get; set; } = false;
+
+    public void ToggleModalClick()
+    {
+        ShowModal = !ShowModal;
+    }
+}
+
+<li>
+    <a class="buddy-card" @onclick="@ToggleModalClick">
+        <img class="buddy-img" src="@Image" alt="@Name" />
+    </a>
+</li>
+
+@if (ShowModal)
+{
+    <div id="buddy-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center z-10 backdrop-blur-sm" onclick="@ToggleModalClick">
+        <div class="max-w-screen-lg w-full relative">
+            <div class="flex flex-col items-center">
+                <img class="buddy-img" src="@Image" alt="@Name"/>
+            </div>
+            <div class="flex align-center justify-center">
+                <a href="/buddies/@Id" class="btn btn-primary">
+                    View Buddy Stats
+                </a>
+            </div>
+        </div>
+    </div>
+}

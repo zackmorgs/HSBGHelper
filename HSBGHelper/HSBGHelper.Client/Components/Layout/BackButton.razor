@@ -1,0 +1,18 @@
+@using Microsoft.AspNetCore.Components
+@using Microsoft.JSInterop
+
+<section id="back-button">
+    <button class="btn" @onclick="GoBack">Back</button>
+</section>
+@code {
+    [Inject]
+    private NavigationManager NavigationManager { get; set; }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+    }
+}
+<style>
+
+</style>

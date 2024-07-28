@@ -1,0 +1,32 @@
+﻿@code {
+    [Parameter]
+    public string difficulty { get; set; }
+}
+
+<span class="difficulty @difficulty.ToLower()">
+    @difficulty
+</span>
+
+<style>
+    .difficulty {
+        text-align: center;
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        background: rgba(0, 0, 0, 0.5);
+        margin-top: 0.25rem;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .difficulty.hard {
+        background: red;
+    }
+
+    .difficulty.medium {
+        background: orange;
+    }
+
+    .difficulty.easy {
+        background: green;
+    }
+</style>

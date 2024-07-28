@@ -1,0 +1,47 @@
+@using HSBGHelper.Server.Models;
+@using HSBGHelper.Server.Services;
+
+@page "/spells/{Id:int}"
+
+@inject SpellService spellService;
+@inject NavigationManager navigationManager;
+
+<section>
+    <header class="hero hero-spell">
+        <img src="@spell.Image" alt="@spell.Name" class="mx-auto spell-page-image" />
+        <h2 id="spell-title" class="text-3xl text-center">@spell.Name</h2>
+    </header>
+</section>
+<section>
+    <div class="container">
+        <div class="p-4 mx-auto">
+            <h2 class="text-2xl mt-4">Guide</h2>
+            <hr />
+            @if (spell.HtmlGuide == "")
+            {
+                <p class="pt-4">Spell guide is not available but it is coming soon.</p>
+            }
+            else
+            {
+                @(new MarkupString(spell.HtmlGuide)
+                )
+            }
+        </div>
+    </div>
+</section>
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Spell spell { get; set; }
+
+    protected override async void OnInitialized()
+    {
+        spell = await spellService.GetSpellById(Id);
+        if (spell == null)
+        {
+            navigationManager.NavigateTo("/404");
+            return;
+        }
+    }
+}

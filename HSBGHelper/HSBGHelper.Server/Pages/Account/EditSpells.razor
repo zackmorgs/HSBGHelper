@@ -1,0 +1,81 @@
+@page "/admin/edit-spells"
+
+@using HSBGHelper.Server.Data
+@using HSBGHelper.Server.Models;
+@using HSBGHelper.Server.Services;
+
+@inject SpellService spellService;
+@inject NavigationManager navigationManager;
+
+@if (spells != null)
+{
+    <section>
+        <header class="hero">
+            <h2 class="text-2xl">Edit Spells</h2>
+        </header>
+    </section>
+    <section>
+        <div class="container">
+            <div class="p-4">
+                <table class="text-left table-auto w-full">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Tier</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var spell in spells)
+                        {
+                            <tr>
+                                <td>@spell.Name <a class="spell-edit-link" href="/admin/edit-spell/@spell.Id">Edit</a></td>
+                                <td>
+                                    <select @onchange="async (e) => await OnTierChange(spell, e)" class="border rounded">
+                                        @for (int i = 1; i <= 6; i++)
+                                        {
+                                            <option value="@i" selected="@(@spell.Tier == i)">@i</option>
+                                        }
+                                    </select>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+}
+else
+{
+    <section>
+        <header class="hero">
+            <h2 class="text-2xl">Edit Spells</h2>
+            <p>Loading...</p>
+        </header>
+    </section>
+}
+@code {
+    List<Spell> spells;
+
+    protected override async Task OnInitializedAsync()
+    {
+        spells = await spellService.GetSpells();
+    }
+
+    async Task OnTierChange(Spell spell, ChangeEventArgs e)
+    {
+        spell.Tier = Convert.ToInt32(e.Value.ToString());
+        await spellService.SetSpellTierById(spell.Id, spell.Tier);
+        StateHasChanged();
+    }
+}
+
+<style>
+    .spell-edit-link {
+        color: blue;
+        text-decoration: underline;
+        margin-right: 1rem;
+
+        float:right;
+    }
+</style>

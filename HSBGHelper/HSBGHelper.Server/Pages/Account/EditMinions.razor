@@ -1,0 +1,58 @@
+@page "/admin/edit-minions";
+
+@using HSBGHelper.Server.Data
+@using HSBGHelper.Server.Models;
+@using HSBGHelper.Server.Services;
+
+@rendermode InteractiveServer
+
+@inject MinionService minionService;
+@inject NavigationManager navigationManager;
+
+<section>
+    <header class="hero">
+        <h2 class="text-2xl">Edit Minions</h2>
+    </header>
+</section>
+<section>
+    <div class="container mx-auto">
+        <div class="flex flex-col">
+            @foreach (var minion in minions)
+            {
+                <div class="p-4 grid grid-cols-2 minion-row">
+                    <div class="minion-name">
+                        <span class="text-xl">@minion.Name</span>
+                    </div>
+                    <div class="edit-link text-right">
+                        <a href="/admin/edit-minion/@minion.Id">
+                            Edit
+                        </a>
+                    </div>
+                </div>   
+                <hr/>
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+    private List<Minion> minions;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        minions = await minionService.GetMinions();
+        if (minions == null) {
+            navigationManager.NavigateTo("/404");
+        }
+    }
+}
+
+<style>
+    .edit-link a {
+        color: #0000FF;
+    }
+    .minion-row:hover,
+    .minion-row:active {
+        background-color: #f0f0f0;
+    }
+</style>
