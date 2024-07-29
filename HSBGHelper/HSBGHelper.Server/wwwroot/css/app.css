@@ -185,6 +185,7 @@ h5 {
 .hero h2 {
   color: white;
 }
+
 #home-links h2 {
   color: #830e0e;
   /* border-bottom: 1px solid #222; */
@@ -250,7 +251,9 @@ h5 {
 hr {
   border-bottom: 1px solid black;
 }
-
+#home-links-list p {
+  margin: 1rem 0rem 0.25rem;
+}
 .compositions-tier hr {
   border-top: 2px solid black;
 }
@@ -349,6 +352,10 @@ footer {
   }
   #hero-homepage h1 {
     font-size:3rem;
+  }
+  .btn-large {
+    font-size:1.5rem;
+    text-shadow:none;
   }
 }
 
