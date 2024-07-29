@@ -185,7 +185,17 @@ h5 {
 .hero h2 {
   color: white;
 }
-
+#home-links h2 {
+  color: #830e0e;
+  /* border-bottom: 1px solid #222; */
+  margin-bottom: 0.5rem;
+  margin: -1rem -1rem 0.5rem -1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  background: #ffffffcf;
+  border-top-right-radius: 0.5rem;
+  border-top-left-radius: 0.5rem;
+}
 /* .hero .text-2xl {
         background: #c10000;
         color: white;
