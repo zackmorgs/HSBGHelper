@@ -1,6 +1,18 @@
 # HSBGHelper
 A Blazor app that helps Hearthstone: Battlegrounds players make intelligent decisions about how to play.
 
+## How to run:
+- Clone this repository and open the directory in powershell.
+- `cd "./HSBGHelper/HSBGHelper.Utilities"`
+- `dotnet restore`
+- `dotnet run`
+- This may take a while as it scrapes official hearthstone servers for all the data they have.
+- `cd ..`
+- `cd "./HSBGHelper/HSBGHelper.Server"`
+- `dotnet restore`
+- `dotnet run`
+- Check the ip address and port listed in the cmd to view the site!
+
 ## Overview
 - Based off of JeefHS's [HSBGGuide](hsbgguide.com.)
 - Contains all scrapable data from [Hearthstone Official site](https://hearthstone.blizzard.com/en-us/battlegrounds).
