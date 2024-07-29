@@ -5,7 +5,7 @@
 <PageTitle>HSBGHelper | Home</PageTitle>
 
 <section>
-    <header id="hero-homepage" class="hero pt-8 pb-7 md:pt-11 md:pb-8 lg:pt-12 lg:pb-12">
+    <header id="hero-homepage" class="hero pt-8 pb-7 md:pt-11 md:pb-8 lg:pt-12 lg:pb-12 bg-cover">
         @* <img id="hs-logo-homepage" src="/img/hs-logo.png" alt="Hearthstone Logo" /> *@
         <div class="hero-text">
             <h1 class="text-3xl lg:text-4xl">HSBGHelper.com</h1>
@@ -19,11 +19,11 @@
 </section>
 <section>
     <nav id="home-links" class="container mx-auto mb-4">
-        <ul id="home-links-list" class="grid grid-cols-1 align-bottom md:grid-cols-2 lg:grid-cols-4">
+        <ul id="home-links-list" class="grid grid-cols-1 align-bottom md:grid-cols-2 lg:grid-cols-3">
             <li>
                 <div>
                     <h2 class="text-2xl">Get Started</h2>
-                    <p>Learn the basics of Battlegrounds. This one is for beginners</p>
+                    <p>Learn the basics of Battlegrounds. This one is for beginners. Click here now!</p>
                 </div>
                 <a href="/get-started" class="btn btn-secondary mt-4">
                     <span>Get Started</span>
@@ -33,7 +33,7 @@
             <li>
                 <div>
                     <h2 class="text-2xl">Heroes</h2>
-                    <p>Learn about the heroes in Battlegrounds. Armor, buddies, and affinities!</p>
+                    <p>Learn about the heroes in Battlegrounds. Armor, buddies, and affinities.</p>
                 </div>
                 <a href="/heroes" class="btn btn-secondary mt-4">
                     <span>Heroes</span>
@@ -43,35 +43,45 @@
             <li>
                 <div>
                     <h2 class="text-2xl">Compositions</h2>
-                    <p>Learn about the different compositions in Battlegrounds</p>
+                    <p>Learn about the different compositions in Battlegrounds for you to up your game.</p>
                 </div>
                 <a href="/compositions" class="btn btn-secondary mt-4">
                     <span>Compositions</span>
                     <RightOutlined />
                 </a>
             </li>
-            <li>
+            <!-- <li>
                 <h2 class="text-2xl">Buddies</h2>
                 <p>Learn about buddies in Battlegrounds! Find the best synergies and stategies.</p>
                 <a href="/buddies" class="btn btn-secondary mt-4">
                     <span>Buddies</span>
                     <RightOutlined />
                 </a>
-            </li>
+            </li> -->
         </ul>
     </nav>
 </section>
 <style>
     #hero-homepage {
-        @* background-image: url("/img/hs-wallpaper.jpg"); *@
+        background-image: url("https://static1.srcdn.com/wordpress/wp-content/uploads/2020/02/Hearthstone-Battlegrounds-Header.jpg?q=50&fit=crop&w=1100&h=618&dpr=1.5");
         @* color: #fef53d; *@
         background-color: hsl(0deg 37.32% 97.72%);
         border-bottom: .25rem solid white;
+        text-shadow: 0px 0px 10px black;
+        padding-top:10rem;
+        backdrop-filter: blur(24px);
     }
 
     #hero-homepage h1 {
         @*  text-shadow: 2px 2px 6px black; *@
-        color:#b90a0a;
+        /* color:#b90a0a; */
+        color:white;
+        font-size:3rem;
+    }
+
+    #hero-homepage p {
+        color:white;
+        text-shadow: 0px 0px 10px black;
     }
 
     #home-links {
@@ -94,5 +104,12 @@
         padding: 1rem;
         margin: 1rem;
         background-color: #ead5aa;
+    }
+
+    @@media (min-width: 1200px) {
+        #hero-homepage h1 {
+            font-size:5rem;
+            line-height:inherit;
+        }
     }
 </style>

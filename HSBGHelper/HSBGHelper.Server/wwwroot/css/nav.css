@@ -155,7 +155,7 @@
         display:block;
         transition:all 0.3s ease;
         height:100%;
-        padding:1em 1.5rem;    
+        padding:1em 1.25rem;    
     }
     #nav-list a:hover,
     #nav-list .active {
