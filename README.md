@@ -13,6 +13,14 @@ A Blazor app that helps Hearthstone: Battlegrounds players make intelligent deci
 - `dotnet run`
 - Check the ip address and port listed in the cmd to view the site!
 
+## Administration
+- /admin/edit-heroes
+- /admin/edit-buddies
+- /admin/edit-minions
+- /admin/edit-spells
+
+You can use these pages to add data to the the different database elements. ...There are hundreds of them! Have fun!
+
 ## Overview
 - Based off of JeefHS's [HSBGGuide](hsbgguide.com.)
 - Contains all scrapable data from [Hearthstone Official site](https://hearthstone.blizzard.com/en-us/battlegrounds).
