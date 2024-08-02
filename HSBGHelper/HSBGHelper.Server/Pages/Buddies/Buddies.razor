@@ -82,8 +82,20 @@
         </ul>
     </div>
 </section>
+@if (shouldPaginate == true)
+{
+    <div class="container mx-auto">
+        <div class="p-4 flex items-center justify-center">
+            <a class="btn btn-primary mx-auto" @onclick="() => { shouldPaginate=false; OnInitialized(); }">
+                <span>Load More</span>
+                <ArrowDownOutlined />
+            </a>
+        </div>
+    </div>
+}
 
 @code {
+    private bool shouldPaginate = true;
     private bool sortAsc = true;
     private bool sortName = false;
     private bool sortByType = false;
@@ -93,7 +105,6 @@
     private List<String> Types = new List<String> { "All", "Beast", "Demon", "Dragon", "Elemental", "Mech", "Murloc",
 "Naga", "Pirate", "Quilboar", "Undead", "Neutral" };
     private List<String> tiers = new List<string> { "All", "1", "2", "3", "4", "5", "6" };
-
     private String selectedType = "All";
     private String selectedTier = "All";
 
@@ -101,6 +112,10 @@
     {
         buddies = dbContext.Buddies.ToList();
         filteredBuddies = buddies;
+        if (shouldPaginate)
+        {
+            filteredBuddies = filteredBuddies.Take(10).ToList();
+        }
     }
 
     private void handleNameSort()
@@ -179,6 +194,11 @@
                 filteredBuddies = filteredBuddies.OrderByDescending(b => b.Name).ToList();
             }
         }
+
+        if (shouldPaginate)
+        {
+            filteredBuddies = filteredBuddies.Take(10).ToList();
+        }
     }
 
     private string GetActiveClass(bool isSelected)
@@ -254,7 +274,7 @@
     }
 
     .buddy-img {
-        transition:transform 0.3s ease;
+        transition: transform 0.3s ease;
     }
 
     .buddy-img:hover {
