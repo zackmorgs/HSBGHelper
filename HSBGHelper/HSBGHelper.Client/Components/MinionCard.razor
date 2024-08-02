@@ -21,30 +21,51 @@
         get;
         set;
     }
-    public bool ShowModal {get; set; } = false;
-
+    public bool ShowModal { get; set; } = false;
+    public bool imageIsLoaded = false;
+    
     public void ToggleModalClick()
     {
         ShowModal = !ShowModal;
+    }
+    public async Task handleImageLoad()
+    {
+        await Task.Delay(500);
+        imageIsLoaded = true;
     }
 }
 
 <li>
     <a class="minion-card" @onclick="@ToggleModalClick">
-        <img class="minion-img" src="@Image" alt="@Name" />
+        @if (!imageIsLoaded)
+        {
+            <div class="lds-roller">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        }
+        <img class="minion-img @(imageIsLoaded ? "" : "hidden")" src="@Image" alt="@Name" @onload="()=> handleImageLoad()" />
     </a>
 </li>
 
 @if (ShowModal)
 {
-    <div id="minion-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center z-10" onclick="@ToggleModalClick">
+    <div id="minion-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center z-10"
+        onclick="@ToggleModalClick">
         <div class="w-full relative">
             <div class="flex flex-col items-center">
-                <img class="minion-img" src="@Image" alt="@Name"/>
+                <img class="minion-img" src="@Image" alt="@Name" />
             </div>
             <div class="flex align-center justify-center">
                 <a href="/minions/@Id" class="btn btn-primary">
-                    <span>View Minion Stats</span> <RightOutlined />
+                    <span>View Minion Stats</span>
+                    <RightOutlined />
                 </a>
             </div>
         </div>
@@ -60,14 +81,17 @@
         color: inherit;
         transition: transform 0.3s ease;
     }
+
     .minion-card:hover {
         cursor: pointer;
-        transform:scale(1.1);
+        transform: scale(1.1);
     }
+
     .minion-img {
         filter: drop-shadow(rgba(0, 0, 0, 0.6) 0px 3px 3px);
     }
+
     #minion-modal {
-        overflow-y:hidden;
+        overflow-y: hidden;
     }
 </style>

@@ -20,6 +20,7 @@
         get;
         set;
     }
+    public bool imageIsLoaded = false;
 
     public bool ShowModal { get; set; } = false;
 
@@ -27,11 +28,29 @@
     {
         ShowModal = !ShowModal;
     }
+    public async Task handleImageLoad()
+    {
+        await Task.Delay(500);
+        imageIsLoaded = true;
+    }
 }
 
 <li>
     <a class="spell-card h-full" @onclick="@ToggleModalClick">
-        <img class="spell-img mx-auto" src="@Image" alt="@Name" />
+        @if (!imageIsLoaded)
+        {
+            <div class="lds-roller">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        }
+        <img class="spell-img mx-auto @(imageIsLoaded ? "" : "hidden")" src="@Image" alt="@Name" @onload="()=> handleImageLoad()" />
         @* <h4 class="spell-name text-center">@Name</h4> *@
     </a>
 </li>
