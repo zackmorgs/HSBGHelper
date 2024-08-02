@@ -14,10 +14,10 @@ A Blazor app that helps Hearthstone: Battlegrounds players make intelligent deci
 - Check the ip address and port listed in the cmd to view the site!
 
 ## Administration
-- /admin/edit-heroes
-- /admin/edit-buddies
-- /admin/edit-minions
-- /admin/edit-spells
+- `/admin/edit-heroes`
+- `/admin/edit-buddies`
+- `/admin/edit-minions`
+- `/admin/edit-spells`
 
 You can use these pages to add data to the the different database elements. ...There are hundreds of them! Have fun!
 
