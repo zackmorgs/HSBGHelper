@@ -28,8 +28,7 @@ You can use these pages to add data to the the different database elements. ...T
     - Will try and include data from HSReplay's battleground [website](https://hsreplay.net/battlegrounds/heroes/) if I get that far. 
 
 ## To Do:
-- Create CRUD UI/Backend for updating the each hero, buddy, minion, and spell
-    - this includes synergies and useful information about each card in the game
+- Handle synergies and useful information about each card in the game
 
 ## About HSBGHelper
 - uses WASM as well as Blazor Interactive Server-side methods

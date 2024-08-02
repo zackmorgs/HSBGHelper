@@ -20,7 +20,8 @@
         <ul class="tiers flex flex-row justify-between mb-4">
             @foreach (var tier in tiers)
             {
-                <li class="flex align-center justify-center tier @(tier == selectedTier ? "selected" : "")" @onclick="() => HandleTierClick(tier)">
+                <li class="flex align-center justify-center tier @(tier == selectedTier ? "selected" : "")"
+                    @onclick="() => HandleTierClick(tier)">
                     <span>@tier</span>
                 </li>
             }
@@ -36,6 +37,17 @@
             }
         </ul>
     </div>
+    @if (shouldPaginate)
+    {
+        <div class="container mx-auto">
+            <div class="p-4 flex items-center justify-center">
+                <a class="btn btn-primary mx-auto" @onclick="() => { shouldPaginate=false; OnInitializedAsync(); }">
+                    <span>Load More</span>
+                    <ArrowDownOutlined />
+                </a>
+            </div>
+        </div>
+    }
 </section>
 
 
@@ -45,11 +57,18 @@
     private List<string> tiers = new List<string>();
     private bool spellsLoaded = false;
     private string selectedTier = "All";
+    private bool shouldPaginate = true;
     protected override async Task OnInitializedAsync()
     {
         tiers = new List<String> { "All", "1", "2", "3", "4", "5", "6" };
         spells = await spellService.GetSpells();
         filteredSpells = spells;
+
+        if (shouldPaginate)
+        {
+            filteredSpells = filteredSpells.Take(10).ToList();
+        }
+
         spellsLoaded = true;
     }
 
@@ -60,7 +79,6 @@
         if (selectedTier.ToString() == "All")
         {
             filteredSpells = spells.ToList(); // Show all spells if no tier is selected
-            return;
         }
         else
         {
@@ -70,6 +88,12 @@
 
             filteredSpells = spellQuery.ToList();
         }
+
+        if (shouldPaginate)
+        {
+            filteredSpells = filteredSpells.Take(10).ToList();
+            return;
+        }
     }
 }
 
@@ -77,10 +101,11 @@
     #controls {
         max-width: 32rem;
     }
+
     .tier {
         cursor: pointer;
         padding: 0.5rem;
-        border-radius:50%;
+        border-radius: 50%;
         transition: background-color 0.3s;
         width: 2.5rem;
         height: 2.5rem;
@@ -90,7 +115,7 @@
 
     .tier.selected {
         color: white;
-        background-color: #b90a0a ;
+        background-color: #b90a0a;
         text-shadow: 0px 0px 10px #ffffff9c;
         box-shadow: 0px 0px 10px #ffffff9c;
     }
