@@ -20,7 +20,9 @@
     private bool alphabeticalAscending = false;
     private bool tierAscending = true; // Default to ascending for Jeef's tier list
     private bool armorAscending = false;
+    private int maxOnLoad = 10;
 
+    private bool shouldPaginate = true;
     private Dictionary<string, int> tierOrder = new Dictionary<string, int>
 {
 { "S", 1 },
@@ -35,8 +37,7 @@
     {
         heroes = dbContext.Heroes.ToList();
         filteredHeroes = heroes;
-        sortByJeef = true;
-        tierAscending = false;
+        @* tierAscending = false; *@
 
         SortBy(); // Apply default sorting by Jeef's tier list
     }
@@ -50,8 +51,13 @@
         armorSelected = false;
 
         filteredHeroes = alphabeticalAscending
-        ? filteredHeroes.OrderBy(x => x.Name).ToList()
-        : filteredHeroes.OrderByDescending(x => x.Name).ToList();
+        ? heroes.OrderBy(x => x.Name).ToList()
+        : heroes.OrderByDescending(x => x.Name).ToList();
+
+        if (shouldPaginate == true)
+        {
+            filteredHeroes = filteredHeroes.Take(maxOnLoad).ToList();
+        }
     }
 
     private void SortArmor()
@@ -63,8 +69,13 @@
         tierSelected = false;
 
         filteredHeroes = armorAscending
-        ? filteredHeroes.OrderBy(x => x.Armor).ToList()
-        : filteredHeroes.OrderByDescending(x => x.Armor).ToList();
+        ? heroes.OrderBy(x => x.Armor).ToList()
+        : heroes.OrderByDescending(x => x.Armor).ToList();
+
+        if(shouldPaginate == true)
+        {
+            filteredHeroes = filteredHeroes.Take(maxOnLoad).ToList();
+        }
     }
 
     private void SortBy()
@@ -77,15 +88,36 @@
         alphabeticalSelected = false;
         armorSelected = false;
 
-        filteredHeroes = sortByJeef
-        ? tierAscending
-        ? filteredHeroes.OrderBy(x => tierOrder.ContainsKey(x.TierJeef) ? tierOrder[x.TierJeef] : int.MaxValue).ToList()
-        : filteredHeroes.OrderByDescending(x => tierOrder.ContainsKey(x.TierJeef) ? tierOrder[x.TierJeef] :
-        int.MaxValue).ToList()
-        : tierAscending
-        ? filteredHeroes.OrderBy(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] : int.MaxValue).ToList()
-        : filteredHeroes.OrderByDescending(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] :
-        int.MaxValue).ToList();
+        if (shouldPaginate == true)
+        {
+            filteredHeroes = sortByJeef
+            ? tierAscending
+            ? heroes.OrderBy(x => tierOrder.ContainsKey(x.TierJeef) ? tierOrder[x.TierJeef] : int.MaxValue).ToList()
+            : heroes.OrderByDescending(x => tierOrder.ContainsKey(x.TierJeef) ? tierOrder[x.TierJeef] :
+            int.MaxValue).ToList()
+            : tierAscending
+            ? heroes.OrderBy(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] : int.MaxValue).ToList()
+            : heroes.OrderByDescending(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] :
+            int.MaxValue).ToList();
+
+            filteredHeroes = filteredHeroes.Take(maxOnLoad).ToList();
+        }
+        else
+        {
+            filteredHeroes = sortByJeef
+            ? tierAscending
+            ? heroes.OrderBy(x => tierOrder.ContainsKey(x.TierJeef) ? tierOrder[x.TierJeef] : int.MaxValue).ToList()
+            : heroes.OrderByDescending(x => tierOrder.ContainsKey(x.TierJeef) ? tierOrder[x.TierJeef] :
+            int.MaxValue).ToList()
+            : tierAscending
+            ? heroes.OrderBy(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] : int.MaxValue).ToList()
+            : heroes.OrderByDescending(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] :
+            int.MaxValue).ToList();
+        }
+
+
+
+
     }
     private void SortByHSReplay()
     {
@@ -106,6 +138,11 @@
         ? filteredHeroes.OrderBy(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] : int.MaxValue).ToList()
         : filteredHeroes.OrderByDescending(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] :
         int.MaxValue).ToList();
+
+        if (shouldPaginate == true)
+        {
+            filteredHeroes = filteredHeroes.Take(maxOnLoad).ToList();
+        }
     }
     private string GetActiveClass(bool isSelected)
     {
@@ -192,6 +229,17 @@
                 }
             }
         </ul>
+        @if (shouldPaginate == true)
+        {
+            <div class="container mx-auto">
+                <div class="p-4 flex items-center justify-center">
+                    <a class="btn btn-primary mx-auto" @onclick="() => { shouldPaginate=false; SortBy(); }">
+                        <span>Load More</span>
+                        <ArrowDownOutlined/>
+                    </a>
+                </div>
+            </div>
+        }
     </div>
 </section>
 
@@ -210,7 +258,7 @@
     }
 
     .control-list {
-        margin: 0.5rem; 
+        margin: 0.5rem;
     }
 
     .control-list li {
@@ -228,17 +276,21 @@
     #tier-list li {
         margin: 0;
     }
+
     #tier-list li:first-child {
         border-top-right-radius: 0;
         border-bottom-right-radius: 0;
     }
+
     #tier-list li:not(:first-child, :last-child) {
         border-radius: 0;
     }
+
     #tier-list li:last-child {
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
     }
+
     #controls li:hover {
         background-color: #ffffff;
     }
