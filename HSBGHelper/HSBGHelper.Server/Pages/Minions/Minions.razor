@@ -9,7 +9,8 @@
 
 @inject HSBGDb dbContext
 
-@if (heroesLoaded) {
+@if (heroesLoaded)
+{
     <section>
         <header class="hero">
             <h3 class="text-2xl">Minions</h3>
@@ -28,7 +29,8 @@
             <ul class="tiers flex flex-row justify-between mb-4">
                 @foreach (var tier in tiers)
                 {
-                    <li class="tier @(tier == selectedTier ? "selected" : "") flex align-center justify-center" @onclick="() => HandleTierClick(tier)">
+                    <li class="tier @(tier == selectedTier ? "selected" : "") flex align-center justify-center"
+                        @onclick="() => HandleTierClick(tier)">
                         <span>@tier</span>
                     </li>
                 }
@@ -44,14 +46,35 @@
                 }
             </ul>
         </div>
+        @if (shouldPaginate == true)
+        {
+            <div class="container mx-auto">
+                <div class="p-4 flex items-center justify-center">
+                    <a class="btn btn-primary mx-auto" @onclick="() => { shouldPaginate=false; FilterMinions(); }">
+                        <span>Load More</span>
+                        <ArrowDownOutlined />
+                    </a>
+                </div>
+            </div>
+        }
     </section>
 }
 else
 {
-    <div id="hero-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 backdrop-blur-sm flex justify-center items-center z-10">
+    <div id="hero-modal"
+        class="fixed inset-0 bg-gray-900 bg-opacity-75 backdrop-blur-sm flex justify-center items-center z-10">
         <div class="max-w-screen-lg w-full max-h-screen overflow-auto relative">
             <div class="flex flex-col items-center">
-                <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                <div class="lds-roller">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
             </div>
         </div>
     </div>
@@ -65,7 +88,7 @@ else
     private string selectedTier { get; set; } = "All";
     private string selectedType { get; set; } = "All";
     private List<string> types { get; set; } = new List<string>();
-    
+    private bool shouldPaginate = true;
     private bool heroesLoaded { get; set; } = false;
     public void HandleTierClick(string tier)
     {
@@ -94,23 +117,35 @@ else
         }
 
         filteredMinions = query.ToList();
+
+        if (shouldPaginate) {
+            filteredMinions = filteredMinions.Take(10).ToList();
+        }
     }
 
     protected override async Task OnInitializedAsync()
     {
+        tiers = new List<string> { "All", "1", "2", "3", "4", "5", "6", "7" };
+        types = new List<string> 
+            { 
+                "All", "Beast", "Demon", "Dragon", "Elemental", "Mech", "Murloc", "Pirate", "Quilboar", "Undead", "Neutral"
+            };
+
         await LoadMinions();
     }
     private async Task LoadMinions()
     {
         // Initialize tiers and types
-        tiers = new List<string> { "All", "1", "2", "3", "4", "5", "6", "7" };
-        types = new List<string> { "All", "Beast", "Demon", "Dragon", "Elemental", "Mech", "Murloc", "Pirate", "Quilboar", "Undead", "Neutral"};
 
         // Load the list of minions
         minions = dbContext.Minions.ToList();
 
         // Initially show all minions
         filteredMinions = minions;
+        
+        if (shouldPaginate) {
+            filteredMinions = filteredMinions.Take(10).ToList();
+        }
 
         heroesLoaded = true;
     }
@@ -139,8 +174,8 @@ else
     .tier.selected {
         color: white;
 
-        background-color:#b90a0a;
-        text-shadow:0px 0px 10px #ffffff9c;
+        background-color: #b90a0a;
+        text-shadow: 0px 0px 10px #ffffff9c;
         box-shadow: 0px 0px 10px #ffffff9c;
     }
 
