@@ -7,6 +7,7 @@
 <section>
     <header id="hero-homepage" class="hero pt-8 pb-7 md:pt-11 md:pb-8 lg:pt-12 lg:pb-12 bg-cover">
         @* <img id="hs-logo-homepage" src="/img/hs-logo.png" alt="Hearthstone Logo" /> *@
+        <div class="bg-overlay"></div>
         <div class="hero-text">
             <h1 class="text-3xl">HSBGHelper.com</h1>
             <p class="py-2  ">The Ultimate Hearthstone: Battlegrounds Guide</p>
@@ -70,8 +71,17 @@
         text-shadow: 0px 0px 10px black;
         padding-top:10rem;
         backdrop-filter: blur(24px);
+        position:relative;
     }
-
+    #hero-homepage .bg-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at center, #0000006b 0, #ffffff59, #0000009c 100%);
+        z-index:-1;
+    }
     #hero-homepage h1 {
         @*  text-shadow: 2px 2px 6px black; *@
         /* color:#b90a0a; */
