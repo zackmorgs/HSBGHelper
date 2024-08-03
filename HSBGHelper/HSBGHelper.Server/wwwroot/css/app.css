@@ -44,7 +44,8 @@ h5 {
 
 .lds-roller {
   /* change color here */
-  color: #1c4c5b
+  color: #1c4c5b;
+  margin:1rem;
 }
 
 .lds-roller,
