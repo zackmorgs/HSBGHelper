@@ -1,4 +1,7 @@
-﻿namespace HSBGHelper.Server
+﻿using LettuceEncrypt;
+using LettuceEncrypt.Accounts;
+
+namespace HSBGHelper.Server
 {
     public class Startup
     {
