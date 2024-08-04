@@ -160,16 +160,10 @@
         height:100%;
         padding:1em 1.25rem;    
     }
-    #nav-list a:hover,
-    #nav-list .active {
-        text-shadow:0px 0px 10px white;
+    #nav-list a:hover, #nav-list .active {
+        text-shadow: 0px 0px 10px white;
+        background: #0000001f;
     }
-    #nav-list .active  {
-        background:#0000001f;
-    }
-    /* #nav-list li {
-        display:inline-block;
-    } */
 }
 
 

@@ -5,6 +5,17 @@ using HSBGHelper.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.ConfigureKestrel(kestrel =>
+{
+    kestrel.ListenAnyIP(443, portOptions =>
+    {
+        portOptions.UseHttps(h =>
+        {
+            h.UseLettuceEncrypt(kestrel.ApplicationServices);
+        });
+    });
+});
+
 // Add services to the container.
 builder.Services
     .AddRazorComponents()
@@ -20,6 +31,8 @@ builder.Services.AddScoped<BuddyService>();
 
 builder.Services.AddDbContext<HSBGDb>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddLettuceEncrypt();
 
 var app = builder.Build();
 
