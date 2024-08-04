@@ -3,6 +3,9 @@ using HSBGHelper.Client;
 using HSBGHelper.Server.Components;
 using HSBGHelper.Server.Data;
 using HSBGHelper.Server.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
