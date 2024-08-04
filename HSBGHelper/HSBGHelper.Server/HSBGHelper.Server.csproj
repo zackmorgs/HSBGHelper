@@ -10,6 +10,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNet.Identity.Core" Version="2.2.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.7" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.3" />
     <PackageReference Include="TinyMCE.Blazor" Version="1.0.4" />
     <ProjectReference Include="..\HSBGHelper.Client\HSBGHelper.Client.csproj" />
     <PackageReference Include="AntDesign.Icons" Version="0.1.1" />
