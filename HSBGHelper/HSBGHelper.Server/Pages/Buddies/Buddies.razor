@@ -110,14 +110,12 @@
 
     protected override void OnInitialized()
     {
-        Setup(true); 
-    }
-    private void Setup() {
         buddies = dbContext.Buddies.ToList();
         filteredBuddies = buddies;
         handleNameSort();
     }
-    private void handleNameSort(bool ascending)
+
+    private void handleNameSort()
     {
         sortName = true;
         sortByType = false;
