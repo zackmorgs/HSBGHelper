@@ -20,9 +20,9 @@
             <ul class="control-list flex flex-row items-center justify-start w-full">
                 <li @onclick="handleNameSort" class="@GetActiveClass(sortName)">
                     <span>Name</span>
-                    @if (sortAsc)
+                    @if (sortDesc)
                     {
-                        <SortAscendingOutlined />
+                        <sortDescendingOutlined />
                     }
                     else
                     {
@@ -33,9 +33,9 @@
                 {
                     <li @onclick="handleTierSort" class="@GetActiveClass(sortByTier)">
                         <span>Tier</span>
-                        @if (sortAsc)
+                        @if (sortDesc)
                         {
-                            <SortAscendingOutlined />
+                            <sortDescendingOutlined />
                         }
                         else
                         {
@@ -86,7 +86,7 @@
 {
     <div class="container mx-auto">
         <div class="p-4 flex items-center justify-center">
-            <a class="btn btn-primary mx-auto" @onclick="() => { shouldPaginate=false; OnInitialized(); }">
+            <a class="btn btn-primary mx-auto" @onclick="() => { shouldPaginate=false;  OnInitialized(); }">
                 <span>Load More</span>
                 <ArrowDownOutlined />
             </a>
@@ -96,8 +96,8 @@
 
 @code {
     private bool shouldPaginate = true;
-    private bool sortAsc = false;
-    private bool sortName = false;
+    private bool sortDesc = false;
+    private bool sortName = true;
     private bool sortByType = false;
     private bool sortByTier = true;
     private List<Buddy> buddies { get; set; } = new List<Buddy>();
@@ -120,7 +120,7 @@
         sortName = true;
         sortByType = false;
         sortByTier = false;
-        sortAsc = !sortAsc;
+        sortDesc = !sortDesc;
 
         FilterBuddies();
     }
@@ -130,7 +130,7 @@
         sortName = false;
         sortByType = false;
         sortByTier = true;
-        sortAsc = !sortAsc;
+        sortDesc = !sortDesc;
 
         FilterBuddies();
     }
@@ -161,7 +161,7 @@
             filteredBuddies = filteredBuddies.Where(b => b.Tier.ToString() == selectedTier).ToList();
         }
 
-        if (sortAsc)
+        if (sortDesc)
         {
             if (sortByTier)
             {
