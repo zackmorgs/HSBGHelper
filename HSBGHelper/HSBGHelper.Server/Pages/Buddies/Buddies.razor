@@ -96,7 +96,7 @@
 
 @code {
     private bool shouldPaginate = true;
-    private bool sortAsc = true;
+    private bool sortAsc = false;
     private bool sortName = false;
     private bool sortByType = false;
     private bool sortByTier = true;
@@ -110,15 +110,14 @@
 
     protected override void OnInitialized()
     {
+        Setup(true); 
+    }
+    private void Setup() {
         buddies = dbContext.Buddies.ToList();
         filteredBuddies = buddies;
-        if (shouldPaginate)
-        {
-            filteredBuddies = filteredBuddies.Take(11).ToList();
-        }
+        handleNameSort();
     }
-
-    private void handleNameSort()
+    private void handleNameSort(bool ascending)
     {
         sortName = true;
         sortByType = false;
@@ -197,7 +196,7 @@
 
         if (shouldPaginate)
         {
-            filteredBuddies = filteredBuddies.Take(11).ToList();
+            filteredBuddies = filteredBuddies.Take(10).ToList();
         }
     }
 

@@ -14,8 +14,8 @@
     private List<Hero> filteredHeroes { get; set; } = new List<Hero>();
     private List<string> tiers = new List<string> { "S", "A", "B", "C", "D", "F" };
     private bool sortByJeef = true;
-    private bool alphabeticalSelected = false;
-    private bool tierSelected = true;
+    private bool alphabeticalSelected = true;
+    private bool tierSelected = false;
     private bool armorSelected = false;
     private bool alphabeticalAscending = false;
     private bool tierAscending = true; // Default to ascending for Jeef's tier list
@@ -39,7 +39,8 @@
         filteredHeroes = heroes;
         @* tierAscending = false; *@
 
-        SortBy(); // Apply default sorting by Jeef's tier list
+        @* SortBy(); // Apply default sorting by Jeef's tier list *@
+        SortAlphabetical();
     }
 
     private void SortAlphabetical()
