@@ -22,24 +22,24 @@
                     <span>Name</span>
                     @if (sortDesc)
                     {
-                        <sortDescendingOutlined />
+                        <SortDescendingOutlined />
                     }
                     else
                     {
-                        <SortDescendingOutlined />
+                        <SortAscendingOutlined/>
                     }
                 </li>
-                @if (selectedTier == "All")
+                @if (selectedTier == "All") 
                 {
                     <li @onclick="handleTierSort" class="@GetActiveClass(sortByTier)">
                         <span>Tier</span>
                         @if (sortDesc)
                         {
-                            <sortDescendingOutlined />
+                            <SortDescendingOutlined />
                         }
                         else
                         {
-                            <SortDescendingOutlined />
+                            <SortAscendingOutlined/>
                         }
                     </li>
                 }
