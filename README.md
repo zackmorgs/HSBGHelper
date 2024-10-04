@@ -1,7 +1,12 @@
 # HSBGHelper
 A Blazor app that helps Hearthstone: Battlegrounds players make intelligent decisions about how to play.
 
+<<<<<<< HEAD
 [https://hsbghelper.com/](https://hsbghelper.com/)
+=======
+## Note:
+In development for the newest season of Battlegrounds. 
+>>>>>>> d59ce87ebb3580322d625fcfedd157e4d3c0a3f9
 
 ## How to run:
 - Clone this repository and open the directory in powershell.
