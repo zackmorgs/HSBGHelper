@@ -12,5 +12,7 @@ namespace HSBGHelper.Server.Data
         public DbSet<Minion> Minions { get; set; }
         public DbSet<Buddy> Buddies { get; set; }
         public DbSet<Spell> Spells { get; set; }
+        public DbSet<LesserTrinket> LesserTrinkets { get; set; }
+        public DbSet<GreaterTrinket> GreaterTrinkets { get; set; }  
     }
 }

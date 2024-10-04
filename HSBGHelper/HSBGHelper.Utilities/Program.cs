@@ -42,9 +42,71 @@ namespace HSBGHelper.Utilities
                 await program.ScrapeMinions(context);
                 await program.ScrapeHeroInformation(context);
                 await program.ScrapeSpells(context);
+                await program.ScrapeGreaterTrinkets(context);
+                await program.ScrapeLesserTrinkets(context);
+                
+
+
             }
         }
+        private async Task ScrapeLesserTrinkets(HSBGDb context)
+        {
+            string lesserTrinketLink = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=trinket&spellSchool=lesser_trinket";
+            var browserFetcher = new BrowserFetcher();
+            await browserFetcher.DownloadAsync();
+            await using var Browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+            // https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=trinket&spellSchool=greater_trinket
+            // https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=trinket&spellSchool=lesser_trinket
+            var LesserTrinkets = new List<LesserTrinket>();
 
+            string greaterTrinketLink = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=trinket&spellSchool=greater_trinket";
+
+            var page = await Browser.NewPageAsync();
+            await page.GoToAsync(greaterTrinketLink);
+            await page.WaitForSelectorAsync("#MainCardGrid .CardImage");
+            var lesserTrinketNodes = await page.QuerySelectorAllAsync("#MainCardGrid .CardImage");
+
+            foreach (var lesserTrinketNode in lesserTrinketNodes)
+            {
+                var name = await lesserTrinketNode.EvaluateFunctionAsync<string>("e => e.alt");
+                var image = await lesserTrinketNode.EvaluateFunctionAsync<string>("e => e.src");
+                Console.WriteLine("Greater Trinket Found: " + name);
+                
+                LesserTrinkets.Add(new LesserTrinket() { Name = name, Image = image, HtmlGuide = "" });
+            }
+
+            context.LesserTrinkets.AddRange(LesserTrinkets);
+            context.SaveChanges();
+        }
+        private async Task ScrapeGreaterTrinkets(HSBGDb context)
+        {
+            var browserFetcher = new BrowserFetcher();
+            await browserFetcher.DownloadAsync();
+            await using var Browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+            // https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=trinket&spellSchool=greater_trinket
+            // https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=trinket&spellSchool=lesser_trinket
+            var GreaterTrinkets = new List<GreaterTrinket>();
+
+            string greaterTrinketLink = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=trinket&spellSchool=greater_trinket";
+
+            var page = await Browser.NewPageAsync();
+            await page.GoToAsync(greaterTrinketLink);
+            await page.WaitForSelectorAsync("#MainCardGrid .CardImage");
+            var lesserTrinketNodes = await page.QuerySelectorAllAsync("#MainCardGrid .CardImage");
+
+            foreach (var greaterTrinketNode in lesserTrinketNodes)
+            {
+                var name = await greaterTrinketNode.EvaluateFunctionAsync<string>("e => e.alt");
+                var image = await greaterTrinketNode.EvaluateFunctionAsync<string>("e => e.src");
+                Console.WriteLine("Greater Trinket Found: " + name);
+                GreaterTrinkets.Add(new GreaterTrinket() { Name = name, Image = image, HtmlGuide = "" });
+            }
+
+            context.GreaterTrinkets.AddRange(GreaterTrinkets);
+            context.SaveChanges();
+            
+        }   
+ 
         private async Task ScrapeSpells(HSBGDb context)
         {
 
