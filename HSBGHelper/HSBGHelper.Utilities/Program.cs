@@ -156,33 +156,33 @@ namespace HSBGHelper.Utilities
                     heroSynergies = new List<Hero>()
                 };
 
-                // get the buddy information'
-                var buddy = new Buddy()
-                {
-                    Name = "Not Listed",
-                    Image = "",
-                    Tier = 0,
-                    Type = "",
-                    HtmlGuide = "",
-                    spellSynergies = new List<Spell>(),
-                    minionSynergies = new List<Minion>(),
-                    heroSynergies = new List<Hero>()
-                };
-                try
-                {
-                    var buddyNode = await page.QuerySelectorAsync("#relatedCardView a");
-                    var buddyName = await buddyNode.EvaluateFunctionAsync<string>("e => e.innerText");
-                    // hover over buddy text to get the image
-                    await buddyNode.HoverAsync();
-                    var buddyImageNode = await page.QuerySelectorAsync("#relatedCardView a img");
-                    var buddyImage = await buddyImageNode.EvaluateFunctionAsync<string>("e => e.src");
+                // // get the buddy information'
+                // var buddy = new Buddy()
+                // {
+                //     Name = "Not Listed",
+                //     Image = "",
+                //     Tier = 0,
+                //     Type = "",
+                //     HtmlGuide = "",
+                //     spellSynergies = new List<Spell>(),
+                //     minionSynergies = new List<Minion>(),
+                //     heroSynergies = new List<Hero>()
+                // };
+                // try
+                // {
+                //     var buddyNode = await page.QuerySelectorAsync("#relatedCardView a");
+                //     var buddyName = await buddyNode.EvaluateFunctionAsync<string>("e => e.innerText");
+                //     // hover over buddy text to get the image
+                //     await buddyNode.HoverAsync();
+                //     var buddyImageNode = await page.QuerySelectorAsync("#relatedCardView a img");
+                //     var buddyImage = await buddyImageNode.EvaluateFunctionAsync<string>("e => e.src");
 
-                    buddy = new Buddy() { Name = buddyName, Image = buddyImage, Tier = 0, Type = "", HtmlGuide = "", spellSynergies = new List<Spell>(), minionSynergies = new List<Minion>(), heroSynergies = new List<Hero>() };
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
+                //     buddy = new Buddy() { Name = buddyName, Image = buddyImage, Tier = 0, Type = "", HtmlGuide = "", spellSynergies = new List<Spell>(), minionSynergies = new List<Minion>(), heroSynergies = new List<Hero>() };
+                // }
+                // catch (Exception e)
+                // {
+                //     Console.WriteLine(e.Message);
+                // }
 
 
                 // add the hero information to the hero list
@@ -191,7 +191,6 @@ namespace HSBGHelper.Utilities
                     Name = name,
                     Image = image,
                     heroPower = heroPower,
-                    buddy = buddy,
                     TierHSReplay = "",
                     TierJeef = "",
                     HtmlGuide = "",
