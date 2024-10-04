@@ -82,7 +82,7 @@
         </ul>
     </div>
 </section>
-@if (shouldPaginate == true)
+@* @if (shouldPaginate == true)
 {
     <div class="container mx-auto">
         <div class="p-4 flex items-center justify-center">
@@ -92,7 +92,7 @@
             </a>
         </div>
     </div>
-}
+} *@
 
 @code {
     private bool shouldPaginate = true;
@@ -192,10 +192,10 @@
             }
         }
 
-        if (shouldPaginate)
+        @* if (shouldPaginate)
         {
             filteredBuddies = filteredBuddies.Take(10).ToList();
-        }
+        } *@
     }
 
     private string GetActiveClass(bool isSelected)

@@ -47,7 +47,7 @@
                 }
             </ul>
         </div>
-        @if (shouldPaginate == true)
+        @* @if (shouldPaginate == true)
         {
             <div class="container mx-auto">
                 <div class="p-4 flex items-center justify-center">
@@ -57,7 +57,7 @@
                     </a>
                 </div>
             </div>
-        }
+        } *@
     </section>
 }
 else
@@ -119,9 +119,9 @@ else
 
         filteredMinions = query.ToList();
 
-        if (shouldPaginate) {
+        @* if (shouldPaginate) {
             filteredMinions = filteredMinions.Take(10).ToList();
-        }
+        } *@
     }
 
     protected override async Task OnInitializedAsync()
@@ -144,9 +144,9 @@ else
         // Initially show all minions
         filteredMinions = minions;
         
-        if (shouldPaginate) {
+        @* if (shouldPaginate) {
             filteredMinions = filteredMinions.Take(10).ToList();
-        }
+        } *@
 
         heroesLoaded = true;
     }
