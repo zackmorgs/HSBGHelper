@@ -44,9 +44,6 @@ namespace HSBGHelper.Utilities
                 await program.ScrapeSpells(context);
                 await program.ScrapeGreaterTrinkets(context);
                 await program.ScrapeLesserTrinkets(context);
-                
-
-
             }
         }
         private async Task ScrapeLesserTrinkets(HSBGDb context)
@@ -59,11 +56,12 @@ namespace HSBGHelper.Utilities
             // https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=trinket&spellSchool=lesser_trinket
             var LesserTrinkets = new List<LesserTrinket>();
 
-            string greaterTrinketLink = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=trinket&spellSchool=greater_trinket";
-
             var page = await Browser.NewPageAsync();
-            await page.GoToAsync(greaterTrinketLink);
+            await page.GoToAsync(lesserTrinketLink);
+            await Task.Delay(1000);
+
             await page.WaitForSelectorAsync("#MainCardGrid .CardImage");
+
             var lesserTrinketNodes = await page.QuerySelectorAllAsync("#MainCardGrid .CardImage");
 
             foreach (var lesserTrinketNode in lesserTrinketNodes)
@@ -72,8 +70,16 @@ namespace HSBGHelper.Utilities
                 var image = await lesserTrinketNode.EvaluateFunctionAsync<string>("e => e.src");
                 Console.WriteLine("Greater Trinket Found: " + name);
                 
-                LesserTrinkets.Add(new LesserTrinket() { Name = name, Image = image, HtmlGuide = "" });
+                await lesserTrinketNode.ClickAsync();
+                await page.WaitForSelectorAsync(".jWOOrt");
+                var descriptionNode = await page.QuerySelectorAsync(".jWOOrt");
+
+                var description = await descriptionNode.EvaluateFunctionAsync<string>("e => e.innerText");
+                await page.ClickAsync(".knbYrP");
+
+                LesserTrinkets.Add(new LesserTrinket() { Name = name, Description=description, Image = image, HtmlGuide = "" });
             }
+            await Browser.CloseAsync();
 
             context.LesserTrinkets.AddRange(LesserTrinkets);
             context.SaveChanges();
@@ -91,16 +97,31 @@ namespace HSBGHelper.Utilities
 
             var page = await Browser.NewPageAsync();
             await page.GoToAsync(greaterTrinketLink);
-            await page.WaitForSelectorAsync("#MainCardGrid .CardImage");
-            var lesserTrinketNodes = await page.QuerySelectorAllAsync("#MainCardGrid .CardImage");
+            await Task.Delay(1000);
 
-            foreach (var greaterTrinketNode in lesserTrinketNodes)
+
+            await page.WaitForSelectorAsync("#MainCardGrid .CardImage");
+            var greaterTrinketNodes = await page.QuerySelectorAllAsync("#MainCardGrid .CardImage");
+
+            foreach (var greaterTrinketNode in greaterTrinketNodes)
             {
                 var name = await greaterTrinketNode.EvaluateFunctionAsync<string>("e => e.alt");
                 var image = await greaterTrinketNode.EvaluateFunctionAsync<string>("e => e.src");
                 Console.WriteLine("Greater Trinket Found: " + name);
-                GreaterTrinkets.Add(new GreaterTrinket() { Name = name, Image = image, HtmlGuide = "" });
+
+                await greaterTrinketNode.ClickAsync();
+                
+                await page.WaitForSelectorAsync(".jWOOrt");
+                var descriptionNode = await page.QuerySelectorAsync(".jWOOrt");
+
+                var description = await descriptionNode.EvaluateFunctionAsync<string>("e => e.innerText");
+
+
+                GreaterTrinkets.Add(new GreaterTrinket() { Name = name, Description=description, Image = image, HtmlGuide = "" });
+                
+                await page.ClickAsync(".knbYrP");
             }
+            await Browser.CloseAsync();
 
             context.GreaterTrinkets.AddRange(GreaterTrinkets);
             context.SaveChanges();
