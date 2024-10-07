@@ -31,7 +31,7 @@ namespace HSBGHelper.Utilities
                 context.Database.EnsureCreated();
                 context.Heroes.RemoveRange(context.Heroes);
                 context.Minions.RemoveRange(context.Minions);
-                context.Buddies.RemoveRange(context.Buddies);
+                // context.Buddies.RemoveRange(context.Buddies);
                 context.Spells.RemoveRange(context.Spells);
                 context.SaveChanges();
 
@@ -39,11 +39,11 @@ namespace HSBGHelper.Utilities
 
                 // context.Remove();
 
-                await program.ScrapeMinions(context);
+                // await program.ScrapeMinions(context);
                 await program.ScrapeHeroInformation(context);
-                await program.ScrapeSpells(context);
-                await program.ScrapeGreaterTrinkets(context);
-                await program.ScrapeLesserTrinkets(context);
+                // await program.ScrapeSpells(context);
+                // await program.ScrapeGreaterTrinkets(context);
+                // await program.ScrapeLesserTrinkets(context);
             }
         }
         private async Task ScrapeLesserTrinkets(HSBGDb context)
@@ -75,6 +75,8 @@ namespace HSBGHelper.Utilities
                 var descriptionNode = await page.QuerySelectorAsync(".jWOOrt");
 
                 var description = await descriptionNode.EvaluateFunctionAsync<string>("e => e.innerText");
+                Console.WriteLine(description);
+
                 await page.ClickAsync(".knbYrP");
 
                 LesserTrinkets.Add(new LesserTrinket() { Name = name, Description=description, Image = image, HtmlGuide = "" });
@@ -115,7 +117,7 @@ namespace HSBGHelper.Utilities
                 var descriptionNode = await page.QuerySelectorAsync(".jWOOrt");
 
                 var description = await descriptionNode.EvaluateFunctionAsync<string>("e => e.innerText");
-
+                Console.WriteLine(description);
 
                 GreaterTrinkets.Add(new GreaterTrinket() { Name = name, Description=description, Image = image, HtmlGuide = "" });
                 
