@@ -22,21 +22,18 @@ namespace HSBGHelper.Server.Services
         {
             return await _context.Heroes
                 .Include(h => h.heroPower)  // Include related HeroPower
-                .Include(h => h.buddy)
                 .ToListAsync();
         }
         public async Task<Hero> GetHeroById(int id)
         {
             return await _context.Heroes
                 .Include(h => h.heroPower)
-                .Include(h => h.buddy)
                 .FirstOrDefaultAsync(h => h.Id == id);
         }
         public async Task<Hero> GetHeroByName(string name)
         {
             return await _context.Heroes
                 .Include(h => h.heroPower)
-                .Include(h => h.buddy)
                 .FirstOrDefaultAsync(h => h.Name == name);
         }
         public async Task SetHeroJeefTier(int id, string tier)

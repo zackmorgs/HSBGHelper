@@ -27,7 +27,6 @@ builder.Services.AddScoped<MinionService>();
 builder.Services.AddScoped<HeroService>();
 builder.Services.AddScoped<SpellService>();
 builder.Services.AddScoped<HeroPowerService>();
-builder.Services.AddScoped<BuddyService>();
 
 builder.Services.AddDbContext<HSBGDb>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

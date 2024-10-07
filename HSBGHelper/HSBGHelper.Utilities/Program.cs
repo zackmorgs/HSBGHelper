@@ -39,11 +39,11 @@ namespace HSBGHelper.Utilities
 
                 // context.Remove();
 
-                // await program.ScrapeMinions(context);
+                await program.ScrapeMinions(context);
                 await program.ScrapeHeroInformation(context);
-                // await program.ScrapeSpells(context);
-                // await program.ScrapeGreaterTrinkets(context);
-                // await program.ScrapeLesserTrinkets(context);
+                await program.ScrapeSpells(context);
+                await program.ScrapeGreaterTrinkets(context);
+                await program.ScrapeLesserTrinkets(context);
             }
         }
         private async Task ScrapeLesserTrinkets(HSBGDb context)
