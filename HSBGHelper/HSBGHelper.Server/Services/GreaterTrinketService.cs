@@ -20,7 +20,7 @@ namespace HSBGHelper.Server.Services
             return _context.GreaterTrinkets.Find(id);
         }
 
-        public async Task<List<GreaterTrinket>> GetGreaterTrinkets()
+        public async Task<List<GreaterTrinket>> GetTrinkets()
         {
             return _context.GreaterTrinkets.ToList();
         }

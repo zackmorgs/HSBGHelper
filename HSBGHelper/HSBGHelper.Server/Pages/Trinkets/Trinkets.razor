@@ -1,0 +1,91 @@
+@page "/trinkets";
+
+@using HSBGHelper.Server.Data;
+@using HSBGHelper.Server.Models;
+@using HSBGHelper.Server.Services;
+@using HSBGHelper.Client.Components;
+@using AntDesign.Icons;
+
+@rendermode InteractiveServer
+
+@inject GreaterTrinketService greaterTrinketService;
+@inject LesserTrinketService lesserTrinketService;
+
+@code {
+    public List<GreaterTrinket> greaterTrinkets = new List<GreaterTrinket>();
+    public List<LesserTrinket> lesserTrinkets = new List<LesserTrinket>();
+
+    public string trinketType = "greater";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTrinkets();
+    }
+
+    public async Task LoadTrinkets()
+    {
+        if (trinketType == "greater")
+        {
+            greaterTrinkets = await greaterTrinketService.GetTrinkets();
+        }
+        else
+        {
+            lesserTrinkets = await lesserTrinketService.GetTrinkets();
+        }
+    }
+
+    public async Task HandleTrinketTypeChange(ChangeEventArgs e)
+    {
+        trinketType = e.Value.ToString();
+        await LoadTrinkets();
+    }
+}
+
+<section class="hero">
+    <h3 class="text-2xl">
+        Trinkets
+    </h3>
+</section>
+<section>
+    <div id="controls" class="mx-auto flex flex-col md:flex-row px-4 justify-center mb-4">
+        <select name="trinket-type" id="trinkets_type" @onchange="HandleTrinketTypeChange">
+            <option value="greater">Greater Trinkets</option>
+            <option value="lesser">Lesser Trinkets</option>
+        </select>
+        @* <ul class="control-list">
+            <li class="">
+                Cost Ascending
+            </li>
+            <li class="">
+                Cost Descending
+            </li>
+        </ul> *@
+    </div>
+</section>
+<section>
+    <div class="container mx-auto">
+        <ul class="trinkets mb-4 minions mb-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
+            @if (trinketType == "greater")
+            {
+                @foreach (var trinket in greaterTrinkets)
+                {
+                    <TrinketCard Name="@trinket.Name" Image="@trinket.Image" Id="@trinket.Id" TrinketType="greater" />
+                }
+            }
+            else
+            {
+                @foreach (var trinket in lesserTrinkets)
+                {
+                    <TrinketCard Name="@trinket.Name" Image="@trinket.Image" Id="@trinket.Id" TrinketType="lesser" />
+                }
+            }
+        </ul>
+    </div>
+</section>
+
+<style>
+    #trinkets_type {
+        padding: 0.25rem;
+        border-radius: 0.25rem;
+    }
+</style>

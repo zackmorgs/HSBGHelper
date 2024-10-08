@@ -9,6 +9,6 @@ namespace HSBGHelper.Server.Models {
         public string Description { get; set; }
         public string Image { get; set; }
         public string HtmlGuide { get; set; }
-
+        public int Cost { get; set;}
     }
 }

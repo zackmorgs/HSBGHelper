@@ -1,0 +1,61 @@
+@page "/greater-trinket/{Id:int}"
+
+@using HSBGHelper.Server.Models;
+@using HSBGHelper.Server.Services;
+
+@inject NavigationManager navigationManager;
+@inject GreaterTrinketService greaterTrinketService;
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private GreaterTrinket greaterTrinket { get; set; }
+
+    protected override async Task OnInitializedAsync() // Change to Task instead of void
+    {
+        try
+        {
+            greaterTrinket = await greaterTrinketService.GetGreaterTrinketById(Id);
+        }
+        catch (Exception ex)
+        {
+            if (greaterTrinket == null)
+            {
+                navigationManager.NavigateTo("/404");
+                return;
+            }
+        }
+    }
+}
+
+<section>
+    <header class="hero hero-trinket">
+        <img src="@greaterTrinket.Image" alt="@greaterTrinket.Name" class="mx-auto minion-page-image" />
+        <h2 id="trinket_title" class="text-3xl mb-4">@greaterTrinket.Name</h2>
+        <h3 id="trinket_cost" class="mb-4">
+            <b>Cost:</b> @greaterTrinket.Cost
+        </h3>
+        <p id="trinket_description">@greaterTrinket.Description</p>
+    </header>
+</section>
+
+<section id="guide">
+    <div class="container mx-auto p-4">
+        <h2>Guide</h2>
+        @if (string.IsNullOrEmpty(greaterTrinket.HtmlGuide)) // Better check for null or empty
+        {
+            <p>There is no guide for this trinket yet.</p>
+        }
+        else
+        {
+            @greaterTrinket.HtmlGuide
+        }
+    </div>
+</section>
+
+<style>
+    #trinket-description {
+        color: white;
+    }
+</style>
