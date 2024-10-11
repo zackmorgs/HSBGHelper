@@ -16,7 +16,7 @@
     public List<LesserTrinket> lesserTrinkets = new List<LesserTrinket>();
 
     public string trinketType = "greater";
-
+    public bool Ascending = true;
     protected override async Task OnInitializedAsync()
     {
         await LoadTrinkets();
@@ -26,11 +26,25 @@
     {
         if (trinketType == "greater")
         {
-            greaterTrinkets = await greaterTrinketService.GetTrinkets();
+            if (Ascending)
+            {
+                greaterTrinkets = await greaterTrinketService.GetTrinkets();
+            }
+            else
+            {
+                greaterTrinkets = (await greaterTrinketService.GetTrinkets()).OrderByDescending(x => x.Name).ToList();
+            }
         }
         else
         {
-            lesserTrinkets = await lesserTrinketService.GetTrinkets();
+            if (Ascending)
+            {
+                lesserTrinkets = await lesserTrinketService.GetTrinkets();
+            }
+            else
+            {
+                lesserTrinkets = (await lesserTrinketService.GetTrinkets()).OrderByDescending(x => x.Name).ToList();
+            }
         }
     }
 
@@ -38,6 +52,46 @@
     {
         trinketType = e.Value.ToString();
         await LoadTrinkets();
+    }
+
+    public async Task HandleTrinketNameSort(ChangeEventArgs e)
+    {
+        if (trinketType == "greater")
+        {
+            if (e.Value.ToString() == "name_asc")
+            {
+                Ascending = true;
+                greaterTrinkets = greaterTrinkets.OrderBy(x => x.Name).ToList();
+            }
+            else if (e.Value.ToString() == "name_desc")
+            {
+                Ascending = false;
+                greaterTrinkets = greaterTrinkets.OrderByDescending(x => x.Name).ToList();
+            }
+            else if ((e.Value.ToString() == "cost_asc"))
+            {
+                Ascending = true;
+                greaterTrinkets = greaterTrinkets.OrderBy(x => x.Cost).ToList();
+            }
+            else
+            {
+                Ascending = false;
+                greaterTrinkets = greaterTrinkets.OrderByDescending(x => x.Cost).ToList();
+            }
+        }
+        else
+        {
+            if (e.Value.ToString() == "asc")
+            {
+                Ascending = true;
+                lesserTrinkets = lesserTrinkets.OrderBy(x => x.Name).ToList();
+            }
+            else
+            {
+                Ascending = false;
+                lesserTrinkets = lesserTrinkets.OrderByDescending(x => x.Name).ToList();
+            }
+        }
     }
 }
 
@@ -52,19 +106,20 @@
             <option value="greater">Greater Trinkets</option>
             <option value="lesser">Lesser Trinkets</option>
         </select>
-        @* <ul class="control-list">
-            <li class="">
-                Cost Ascending
-            </li>
-            <li class="">
-                Cost Descending
-            </li>
-        </ul> *@
+
+        <select name="trinket-sort-asc" id="trinket_sort_asc" class="mt-4 md:mt-0 md:ml-4"
+            @onchange="HandleTrinketNameSort">
+            <option value="name_asc">Sort Name Ascending</option>
+            <option value="name_desc">Sort Name Descending</option>
+            <option value="cost_asc">Cost Ascending</option>
+            <option value="cost_desc">Cost Descending</option>
+        </select>
+
     </div>
 </section>
 <section>
     <div class="container mx-auto">
-        <ul class="trinkets mb-4 minions mb-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
+        <ul class="trinkets m-4 minions mb-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
             @if (trinketType == "greater")
             {
                 @foreach (var trinket in greaterTrinkets)
@@ -84,7 +139,15 @@
 </section>
 
 <style>
-    #trinkets_type {
+    .trinkets {
+        border-radius: 0.5rem;
+        box-shadow: inset 1px 4px 7px #00000029;
+        padding: 0.25rem;
+        background-color: #ffffff47;
+    }
+
+    #trinkets_type,
+    #trinket_sort_asc {
         padding: 0.25rem;
         border-radius: 0.25rem;
     }

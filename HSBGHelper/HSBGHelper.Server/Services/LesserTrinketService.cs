@@ -17,12 +17,19 @@ namespace HSBGHelper.Server.Services
 
         public async Task<LesserTrinket> GetLesserTrinketById(int id)
         {
-            return _context.LesserTrinkets.Find(id);
+            return _context.LesserTrinkets.Find(id)!;
         }
 
         public async Task<List<LesserTrinket>> GetTrinkets()
         {
             return _context.LesserTrinkets.ToList();
         }
+
+        public async Task UpdateTrinket(LesserTrinket trinket)
+        {
+            _context.LesserTrinkets.Update(trinket);
+            await _context.SaveChangesAsync();
+        }
+
     }
 }

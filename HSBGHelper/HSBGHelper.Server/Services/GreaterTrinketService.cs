@@ -24,5 +24,10 @@ namespace HSBGHelper.Server.Services
         {
             return _context.GreaterTrinkets.ToList();
         }
+        public async Task UpdateTrinket(GreaterTrinket trinket)
+        {
+            _context.GreaterTrinkets.Update(trinket);
+            await _context.SaveChangesAsync();
+        }
     }
 }

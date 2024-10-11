@@ -50,7 +50,8 @@
 </header>
 
 <div class="container mx-auto px-4">
-    @foreach (var tier in new[] { "S-Tier", "A-Tier", "B-Tier", "F-Tier" })
+    <h1>This page is under construction.</h1>
+    @* @foreach (var tier in new[] { "S-Tier", "A-Tier", "B-Tier", "F-Tier" })
     {
         <section class="compositions-tier @tier.ToLower()">
             <h3 class="text-2xl">@tier</h3>
@@ -60,7 +61,6 @@
                 {
                     <li>
                         <a href="@comp.Link" class="composition bg-cover" style="background-image:url('@comp.Image')">
-                            @* <img src="@comp.Image" alt="@comp.Name" /> *@
                             <div class="text">
                                 <h3 class="text-xl text-center">@comp.Name</h3>
                                 <Difficulty difficulty="@comp.Difficulty" />
@@ -70,5 +70,5 @@
                 }
             </ul>
         </section>
-    }
+    } *@
 </div>

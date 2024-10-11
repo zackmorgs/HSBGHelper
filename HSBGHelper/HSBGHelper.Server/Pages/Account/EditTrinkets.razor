@@ -1,0 +1,124 @@
+@page "/admin/edit-trinkets"
+
+@using HSBGHelper.Server.Data
+@using HSBGHelper.Server.Models;
+@using HSBGHelper.Server.Services;
+
+@inject GreaterTrinketService greaterTrinketService;
+@inject LesserTrinketService lesserTrinketService;
+
+@inject NavigationManager navigationManager;
+
+@code {
+    public List<GreaterTrinket> greaterTrinkets = null;
+    public List<LesserTrinket> lesserTrinkets = null;
+    protected override async Task OnInitializedAsync()
+    {
+        greaterTrinkets = await greaterTrinketService.GetTrinkets();
+        lesserTrinkets = await lesserTrinketService.GetTrinkets();
+    }
+    public async Task handleGreaterCostChange(ChangeEventArgs e, GreaterTrinket trinket)
+    {
+        trinket.Cost = int.Parse(e.Value.ToString());
+        await greaterTrinketService.UpdateTrinket(trinket);
+    }
+
+    public async Task handleLesserCostChange(ChangeEventArgs e, LesserTrinket trinket)
+    {
+        trinket.Cost = int.Parse(e.Value.ToString());
+        await lesserTrinketService.UpdateTrinket(trinket);
+    }
+}
+
+
+<section>
+    <header class="hero">
+        <h2 class="text-2xl">Edit Trinkets</h2>
+    </header>
+</section>
+
+@if (greaterTrinkets != null && lesserTrinkets != null)
+{
+    <section id="edit_greater_trinkets">
+        <div class="p-4">
+            <h2>Greater Trinkets</h2>
+            <table class="text-left table-auto w-full">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (GreaterTrinket trinket in greaterTrinkets)
+                    {
+                        <tr>
+                            <td>@trinket.Name <a href="/edit-greater-trinket/@trinket.Id">Edit</a></td>
+                            <td>
+                                <select name="trinket-cost" class="trinket-cost mb-2" @onchange="async (e) => handleGreaterCostChange(e, trinket)">
+                                    @for (int i = 1; i <= 10; i++)
+                                    {
+                                        <option value="@trinket.Cost">@i</option>
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+        <section id="edit_lesser_trinkets">
+        <div class="p-4">
+            <h2>Lesser Trinkets</h2>
+            <table class="text-left table-auto w-full">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (LesserTrinket trinket in lesserTrinkets)
+                    {
+                        <tr>
+                            <td>@trinket.Name <a href="/edit-lesser-trinket/@trinket.Id">Edit</a></td>
+                            <td>
+                                <select name="trinket-cost" class="trinket-cost mb-2" @onchange="async (e) => handleLesserCostChange(e, trinket)">
+                                    @for (int i = 1; i <= 10; i++)
+                                    {
+                                        <option value="@trinket.Cost">@i</option>
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+}
+else
+{
+    <section>
+        <div class="container mx-auto flex justify-center align-center">
+            <div class="lds-roller">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
+    </section>
+}
+
+<style>
+    .trinket-cost {
+        padding: 0.25rem;
+        border-radius: 0.25rem;
+    }
+</style>
