@@ -4,6 +4,17 @@ A Blazor app that helps Hearthstone: Battlegrounds players make intelligent deci
 
 [https://hsbghelper.com/](https://hsbghelper.com/)
 
+# Minder's Notes
+- remove modal -> go straight to information pages
+- 3 tiers of trinkets - use color coding
+    - standard? neutral and always offered
+    - pivot: dictated your build
+        - ex automaton
+        - bomb
+    - tribe based trinkets
+- note: https://docs.google.com/spreadsheets/d/1Cg5OU_IYcXDLiqZ8CCcF0L4quyeP28CZftv77XR3UDs/edit?gid=153329801#gid=153329801
+
+
 ## Note:
 In development for the newest season of Battlegrounds. 
 
