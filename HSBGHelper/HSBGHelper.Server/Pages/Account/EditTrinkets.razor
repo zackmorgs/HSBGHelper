@@ -10,6 +10,8 @@
 @inject NavigationManager navigationManager;
 
 @code {
+    private List<String> Tiers = new List<string> { "S", "A", "B", "C", "D", "F", "" };
+
     public List<GreaterTrinket> greaterTrinkets = null;
     public List<LesserTrinket> lesserTrinkets = null;
     protected override async Task OnInitializedAsync()
@@ -26,6 +28,16 @@
     public async Task handleLesserCostChange(ChangeEventArgs e, LesserTrinket trinket)
     {
         trinket.Cost = int.Parse(e.Value.ToString());
+        await lesserTrinketService.UpdateTrinket(trinket);
+    }
+    public async Task handleGreaterTierChange(ChangeEventArgs e, GreaterTrinket trinket)
+    {
+        trinket.Tier = Convert.ToChar(e.Value.ToString());
+        await greaterTrinketService.UpdateTrinket(trinket);
+    }
+    public async Task handleLesserTierChange(ChangeEventArgs e, LesserTrinket trinket)
+    {
+        trinket.Tier = Convert.ToChar(e.Value.ToString());
         await lesserTrinketService.UpdateTrinket(trinket);
     }
 }
@@ -47,6 +59,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Cost</th>
+                        <th>Tier</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -56,9 +69,17 @@
                             <td>@trinket.Name <a href="/edit-greater-trinket/@trinket.Id">Edit</a></td>
                             <td>
                                 <select name="trinket-cost" class="trinket-cost mb-2" @onchange="async (e) => handleGreaterCostChange(e, trinket)">
-                                    @for (int i = 1; i <= 10; i++)
+                                    @for (int i = 0; i <= 10; i++)
                                     {
                                         <option value="@trinket.Cost">@i</option>
+                                    }
+                                </select>
+                            </td>
+                            <td>
+                                <select class="trinket-tier mb-2" @onchange="async (e) => handleGreaterTierChange(e, trinket)">
+                                    @foreach (var tier in Tiers)
+                                    {
+                                        <option value="@tier">@tier</option>
                                     }
                                 </select>
                             </td>
@@ -68,7 +89,7 @@
             </table>
         </div>
     </section>
-        <section id="edit_lesser_trinkets">
+    <section id="edit_lesser_trinkets">
         <div class="p-4">
             <h2>Lesser Trinkets</h2>
             <table class="text-left table-auto w-full">
@@ -76,6 +97,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Cost</th>
+                        <th>Tier</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -84,10 +106,19 @@
                         <tr>
                             <td>@trinket.Name <a href="/edit-lesser-trinket/@trinket.Id">Edit</a></td>
                             <td>
-                                <select name="trinket-cost" class="trinket-cost mb-2" @onchange="async (e) => handleLesserCostChange(e, trinket)">
-                                    @for (int i = 1; i <= 10; i++)
+                                <select name="trinket-cost" class="trinket-cost mb-2"
+                                    @onchange="async (e) => handleLesserCostChange(e, trinket)">
+                                    @for (int i = 0; i <= 10; i++)
                                     {
                                         <option value="@trinket.Cost">@i</option>
+                                    }
+                                </select>
+                            </td>
+                            <td>
+                                <select class="trinket-tier mb-2" @onchange="async (e) => handleLesserTierChange(e, trinket)">
+                                    @foreach (var tier in Tiers)
+                                    {
+                                        <option value="@tier">@tier</option>
                                     }
                                 </select>
                             </td>
@@ -117,7 +148,7 @@ else
 }
 
 <style>
-    .trinket-cost {
+    .trinket-cost,.trinket-tier {
         padding: 0.25rem;
         border-radius: 0.25rem;
     }
