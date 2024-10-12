@@ -10,6 +10,6 @@ namespace HSBGHelper.Server.Models {
         public string Image { get; set; }
         public string HtmlGuide { get; set; }
         public int Cost { get; set;}
-
+        public char Tier { get; set;}
     }
 }

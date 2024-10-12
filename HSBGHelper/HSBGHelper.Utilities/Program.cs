@@ -79,7 +79,7 @@ namespace HSBGHelper.Utilities
 
                 await page.ClickAsync(".knbYrP");
 
-                LesserTrinkets.Add(new LesserTrinket() { Name = name, Description=description, Image = image, HtmlGuide = "", Cost = 0 });
+                LesserTrinkets.Add(new LesserTrinket() { Name = name, Description=description, Image = image, HtmlGuide = "", Cost = 0, Tier = 'F' });
             }
             await Browser.CloseAsync();
 
@@ -119,7 +119,7 @@ namespace HSBGHelper.Utilities
                 var description = await descriptionNode.EvaluateFunctionAsync<string>("e => e.innerText");
                 Console.WriteLine(description);
 
-                GreaterTrinkets.Add(new GreaterTrinket() { Name = name, Description=description, Image = image, HtmlGuide = "", Cost = 0  });
+                GreaterTrinkets.Add(new GreaterTrinket() { Name = name, Description=description, Image = image, HtmlGuide = "", Cost = 0, Tier = 'F' });
                 
                 await page.ClickAsync(".knbYrP");
             }

@@ -17,16 +17,26 @@
     </header>
 </section>
 <section>
-    <div id="controls" class="mx-auto flex flex-col md:flex-row px-4 justify-center">
-        <ul class="tiers flex flex-row justify-between mb-4">
-            @foreach (var tier in tiers)
-            {
-                <li class="flex align-center justify-center tier @(tier == selectedTier ? "selected" : "")"
-                    @onclick="() => HandleTierClick(tier)">
-                    <span>@tier</span>
-                </li>
-            }
-        </ul>
+    <div class="container mx-auto">
+        <div class="flex flex-col md:flex-row item-center justify-between">
+            <div class="flex flex-col p-4">
+                <div class="max-w-full">
+                    <input id="search_spell" type="search" class="block w-full mb-4 md:max-w-60 mx-auto"
+                        placeholder="Search" @oninput="HandleSearchInput" />
+                </div>
+            </div>
+            <div id="controls" class="flex flex-col md:flex-row px-4 justify-center items-center">
+                <ul class="tiers flex flex-row justify-between mb-4">
+                    @foreach (var tier in tiers)
+                    {
+                        <li class="flex align-center justify-center tier @(tier == selectedTier ? "selected" : "")"
+                            @onclick="() => HandleTierClick(tier)">
+                            <span>@tier</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
     </div>
 </section>
 <section>
@@ -38,17 +48,6 @@
             }
         </ul>
     </div>
-    @* @if (shouldPaginate)
-    {
-        <div class="container mx-auto">
-            <div class="p-4 flex items-center justify-center">
-                <a class="btn btn-primary mx-auto" @onclick="() => { shouldPaginate=false; OnInitializedAsync(); }">
-                    <span>Load More</span>
-                    <ArrowDownOutlined />
-                </a>
-            </div>
-        </div>
-    } *@
 </section>
 
 
@@ -59,48 +58,41 @@
     private bool spellsLoaded = false;
     private string selectedTier = "All";
     private bool shouldPaginate = true;
+    public string searchQuery { get; set; }
     protected override async Task OnInitializedAsync()
     {
         tiers = new List<String> { "All", "1", "2", "3", "4", "5", "6" };
         spells = await spellService.GetSpells();
         filteredSpells = spells;
-
-        @* if (shouldPaginate)
-        {
-            filteredSpells = filteredSpells.Take(10).ToList();
-        } *@
-
         spellsLoaded = true;
     }
 
+    // Method to update the search query and filter the minions
+    public async Task HandleSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value.ToString();
+        await FilterSpells();
+    }
     public async Task HandleTierClick(string Tier)
     {
         selectedTier = Tier;
-        // Ensure the selectedTier is not null or empty
-        if (selectedTier.ToString() == "All")
-        {
-            filteredSpells = spells.ToList(); // Show all spells if no tier is selected
-        }
-        else
-        {
-            IEnumerable<Spell> spellQuery = spells;
-
-            spellQuery = spellQuery.Where(m => m.Tier.ToString() == selectedTier);
-
-            filteredSpells = spellQuery.ToList();
-        }
-
-        if (shouldPaginate)
-        {
-            filteredSpells = filteredSpells.Take(10).ToList();
-            return;
-        }
+        await FilterSpells();
     }
+    public async Task FilterSpells()
+    {
+        filteredSpells = spells.Where(spell => spell.Name.ToLower().Contains(searchQuery) && (selectedTier == "All" || spell.Tier.ToString() == selectedTier)).ToList();
+    }
+
 }
 
 <style>
     #controls {
         max-width: 32rem;
+    }
+
+    #search_spell {
+        padding: 0.25rem;
+        border-radius: 0.25rem;
     }
 
     .tier {

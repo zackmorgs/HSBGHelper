@@ -73,15 +73,18 @@
                 Ascending = true;
                 greaterTrinkets = greaterTrinkets.OrderBy(x => x.Cost).ToList();
             }
-            else
+            else if (e.Value.ToString() == "cost_desc")
             {
                 Ascending = false;
                 greaterTrinkets = greaterTrinkets.OrderByDescending(x => x.Cost).ToList();
+            } else {
+                Ascending = true;
+                greaterTrinkets = greaterTrinkets.OrderBy(x => x.Name).ToList();
             }
         }
         else
         {
-            if (e.Value.ToString() == "asc")
+            if (e.Value.ToString() == "name_asc")
             {
                 Ascending = true;
                 lesserTrinkets = lesserTrinkets.OrderBy(x => x.Name).ToList();

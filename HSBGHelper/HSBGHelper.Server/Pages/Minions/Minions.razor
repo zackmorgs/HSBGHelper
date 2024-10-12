@@ -17,47 +17,49 @@
             <h3 class="text-2xl">Minions</h3>
         </header>
     </section>
+
     <section class="px-4 text-center">
-        <div id="controls" class="mx-auto flex flex-col md:flex-row">
-            <select id="types" class="block w-full mb-4 md:mr-4" @onchange="HandleTypesChange">
-                @foreach (var type in types)
-                {
-                    <option value="@type">
-                        @type
-                    </option>
-                }
-            </select>
-            <ul class="tiers flex flex-row justify-between mb-4">
-                @foreach (var tier in tiers)
-                {
-                    <li class="tier @(tier == selectedTier ? "selected" : "") flex align-center justify-center"
-                        @onclick="() => HandleTierClick(tier)">
-                        <span>@tier</span>
-                    </li>
-                }
-            </ul>
-
-
-        </div>
         <div class="container mx-auto">
-            <ul class="minions mb-4 minions mb-4 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                @foreach (var minion in filteredMinions)
-                {
-                    <MinionCard name="@minion.Name" Image="@minion.Image" Id="@minion.Id" />
-                }
-            </ul>
-        </div>
-        @* @if (shouldPaginate == true)
-        {
-            <div class="container mx-auto">
-                <div class="p-4 flex items-center justify-center">
-                    <a class="btn btn-primary mx-auto" @onclick="() => { shouldPaginate=false; FilterMinions(); }">
-                        <span>Load More</span>
-                        <ArrowDownOutlined />
-                    </a>
+            <div class="flex flex-col md:flex-row justify-between">
+                <div class="flex flex-col">
+                    <div class="max-w-full">
+                        <input id="search_minion" type="search" class="block w-full mb-4 md:max-w-60 mx-auto"
+                            placeholder="Search" @oninput="HandleSearchInput" />
+
+                    </div>
+                </div>
+                <div id="controls" class="flex flex-col md:flex-row">
+
+                    <select id="types" class="block w-full mb-4 md:mr-4" @onchange="HandleTypesChange">
+                        @foreach (var type in types)
+                        {
+                            <option value="@type">
+                                @type
+                            </option>
+                        }
+                    </select>
+                    <ul class="tiers flex flex-row justify-between mb-4">
+                        @foreach (var tier in tiers)
+                        {
+                            <li class="tier @(tier == selectedTier ? "selected" : "") flex align-center justify-center"
+                                @onclick="() => HandleTierClick(tier)">
+                                <span>@tier</span>
+                            </li>
+                        }
+                    </ul>
+
+
                 </div>
             </div>
-        } *@
+            <div class="container mx-auto">
+                <ul class="minions mb-4 minions mb-4 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                    @foreach (var minion in filteredMinions)
+                    {
+                        <MinionCard name="@minion.Name" Image="@minion.Image" Id="@minion.Id" />
+                    }
+                </ul>
+            </div>
+        </div>
     </section>
 }
 else
@@ -91,6 +93,9 @@ else
     private List<string> types { get; set; } = new List<string>();
     private bool shouldPaginate = true;
     private bool heroesLoaded { get; set; } = false;
+
+    private string searchQuery { get; set; } = ""; // To store the search query
+
     public void HandleTierClick(string tier)
     {
         selectedTier = tier;
@@ -116,21 +121,26 @@ else
         {
             query = query.Where(m => m.Type == selectedType);
         }
+        // Apply search query filter
+        if (!string.IsNullOrEmpty(searchQuery))
+        {
+            query = query.Where(m => m.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
+        }
 
         filteredMinions = query.ToList();
 
         @* if (shouldPaginate) {
-            filteredMinions = filteredMinions.Take(10).ToList();
-        } *@
+filteredMinions = filteredMinions.Take(10).ToList();
+} *@
     }
 
     protected override async Task OnInitializedAsync()
     {
         tiers = new List<string> { "All", "1", "2", "3", "4", "5", "6", "7" };
-        types = new List<string> 
-            { 
-                "All", "Beast", "Demon", "Dragon", "Elemental", "Mech", "Murloc", "Pirate", "Quilboar", "Undead", "Neutral"
-            };
+        types = new List<string>
+{
+"All", "Beast", "Demon", "Dragon", "Elemental", "Mech", "Murloc", "Pirate", "Quilboar", "Undead", "Neutral"
+};
 
         await LoadMinions();
     }
@@ -143,13 +153,21 @@ else
 
         // Initially show all minions
         filteredMinions = minions;
-        
+
         @* if (shouldPaginate) {
-            filteredMinions = filteredMinions.Take(10).ToList();
-        } *@
+filteredMinions = filteredMinions.Take(10).ToList();
+} *@
 
         heroesLoaded = true;
     }
+
+    // Method to update the search query and filter the minions
+    public void HandleSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value.ToString();
+        FilterMinions();
+    }
+
 }
 
 <style>
@@ -157,7 +175,8 @@ else
         max-width: 32rem;
     }
 
-    #types {
+    #types,
+    #search_minion {
         padding: 0.25rem;
         border-radius: 0.25rem;
     }
