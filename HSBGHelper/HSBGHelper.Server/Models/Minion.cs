@@ -11,11 +11,10 @@ namespace HSBGHelper.Server.Models
         public int Tier { get; set; }
         public string Image { get; set; }
         public string Type { get; set; }
+        public string Mode { get; set; }
         public List<Spell> spellSynergies { get; set; }
         public List<Minion> minionSynergies { get; set; }
         public List<Hero> heroSynergies { get; set; }
         public string HtmlGuide { get; set; }
-
-        
     }
 }

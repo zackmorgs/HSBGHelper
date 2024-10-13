@@ -5,7 +5,7 @@ A Blazor app that helps Hearthstone: Battlegrounds players make intelligent deci
 [https://hsbghelper.com/](https://hsbghelper.com/)
 
 # Minder's Notes
-- remove modal -> go straight to information pages
+- remove modal -> go straight to information/guide pages
 - 3 tiers of trinkets - use color coding
     - standard? neutral and always offered
     - pivot: dictated your build
@@ -15,6 +15,10 @@ A Blazor app that helps Hearthstone: Battlegrounds players make intelligent deci
 - note: https://docs.google.com/spreadsheets/d/1Cg5OU_IYcXDLiqZ8CCcF0L4quyeP28CZftv77XR3UDs/edit?gid=153329801#gid=153329801
 - make calculator (https://hs-tools.github.io/bg-probabilities/)
 - finally get around to laying out desktop
+- add tiers for heros, trinkets, etc. on bottom
+- seperate duos, solos for heros
+    - solos default
+
 
 ## Note:
 In development for the newest season of Battlegrounds. 

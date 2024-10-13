@@ -11,7 +11,7 @@ namespace HSBGHelper.Server.Models
         public string Name { get; set; }
         public string Image { get; set; }
         public int Armor { get; set; }
-        // public Buddy buddy { get; set; }
+        public string Mode { get; set; }
         public HeroPower heroPower { get; set; }
         public string TierHSReplay {get; set;}
         public string TierJeef {get; set;}

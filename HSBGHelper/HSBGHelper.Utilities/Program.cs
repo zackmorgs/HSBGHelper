@@ -37,14 +37,105 @@ namespace HSBGHelper.Utilities
 
                 var program = new Program();
 
-                // context.Remove();
+                // await program.ScrapeMinions(context);
+                await program.ScrapeAllHeroInformation(context);
+                await program.SetHeroMode(context);
+                // await program.ScrapeSpells(context);
+                // await program.ScrapeGreaterTrinkets(context);
+                // await program.ScrapeLesserTrinkets(context);
 
-                await program.ScrapeMinions(context);
-                await program.ScrapeHeroInformation(context);
-                await program.ScrapeSpells(context);
-                await program.ScrapeGreaterTrinkets(context);
-                await program.ScrapeLesserTrinkets(context);
+                // await program.CleanupMinions(context);
             }
+        }
+        private async Task SetHeroMode(HSBGDb context)
+        {
+            var herosNoMode = context.Heroes.ToList();
+
+            string solosPath = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=hero&bgGameMode=solos";
+            string duosPath = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=hero&bgGameMode=duos";
+
+            var browserFetcher = new BrowserFetcher();
+            await browserFetcher.DownloadAsync();
+            await using var Browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+
+            var page = await Browser.NewPageAsync();
+
+            // Get solo mode heroes
+            await page.GoToAsync(solosPath);
+            await page.WaitForSelectorAsync("img.hero");
+
+            var soloHeroNodes = await page.QuerySelectorAllAsync("img.hero");
+
+            var soloHeroNames = new List<string>();
+            foreach (var soloHeroNode in soloHeroNodes)
+            {
+                var name = await soloHeroNode.EvaluateFunctionAsync<string>("e => e.alt");
+                Console.WriteLine("Solo Hero Found: " + name);
+                soloHeroNames.Add(name);
+            }
+
+            // Get duo mode heroes
+            await page.GoToAsync(duosPath);
+            await page.WaitForSelectorAsync("img.hero");
+
+            var duosHeroNodes = await page.QuerySelectorAllAsync("img.hero");
+
+            var duoHeroNames = new List<string>();
+            foreach (var duoHeroNode in duosHeroNodes)
+            {
+                var name = await duoHeroNode.EvaluateFunctionAsync<string>("e => e.alt");
+                Console.WriteLine("Duo Hero Found: " + name);
+                duoHeroNames.Add(name); // Add to the correct list
+            }
+
+            // Categorize heroes into three modes: Solo, Duo, or Both
+            foreach (var hero in herosNoMode)
+            {
+                if (soloHeroNames.Contains(hero.Name) && duoHeroNames.Contains(hero.Name))
+                {
+                    Console.WriteLine(hero.Name + " is in both modes");
+                    hero.Mode = "Both";
+                }
+                else if (soloHeroNames.Contains(hero.Name))
+                {
+                    Console.WriteLine(hero.Name + " is in solo mode");
+                    hero.Mode = "Solo";
+                }
+                else if (duoHeroNames.Contains(hero.Name))
+                {
+                    Console.WriteLine(hero.Name + " is in duo mode");
+                    hero.Mode = "Duo";
+                }
+                else
+                {
+                    Console.WriteLine(hero.Name + " not found in either mode");
+                }
+            }
+
+            // Update heroes in the database
+            context.Heroes.UpdateRange(herosNoMode);
+            await context.SaveChangesAsync();
+
+            // Close the browser
+            await Browser.CloseAsync();
+        }
+        private async Task CleanupMinions(HSBGDb context)
+        {
+            var minions = context.Minions.ToList();
+            // remove duplicate minions
+            foreach (var minion in minions)
+            {
+                var duplicateMinions = context.Minions.Where(m => m.Name == minion.Name).ToList();
+                if (duplicateMinions.Count > 1)
+                {
+                    // remove all but the first minion
+                    for (int i = 1; i < duplicateMinions.Count; i++)
+                    {
+                        context.Minions.Remove(duplicateMinions[i]);
+                    }
+                }
+            }
+            await context.SaveChangesAsync();
         }
         private async Task ScrapeLesserTrinkets(HSBGDb context)
         {
@@ -69,7 +160,7 @@ namespace HSBGHelper.Utilities
                 var name = await lesserTrinketNode.EvaluateFunctionAsync<string>("e => e.alt");
                 var image = await lesserTrinketNode.EvaluateFunctionAsync<string>("e => e.src");
                 Console.WriteLine("Greater Trinket Found: " + name);
-                
+
                 await lesserTrinketNode.ClickAsync();
                 await page.WaitForSelectorAsync(".jWOOrt");
                 var descriptionNode = await page.QuerySelectorAsync(".jWOOrt");
@@ -79,7 +170,7 @@ namespace HSBGHelper.Utilities
 
                 await page.ClickAsync(".knbYrP");
 
-                LesserTrinkets.Add(new LesserTrinket() { Name = name, Description=description, Image = image, HtmlGuide = "", Cost = 0, Tier = 'F' });
+                LesserTrinkets.Add(new LesserTrinket() { Name = name, Description = description, Image = image, HtmlGuide = "", Cost = 0, Tier = 'F' });
             }
             await Browser.CloseAsync();
 
@@ -112,24 +203,23 @@ namespace HSBGHelper.Utilities
                 Console.WriteLine("Greater Trinket Found: " + name);
 
                 await greaterTrinketNode.ClickAsync();
-                
+
                 await page.WaitForSelectorAsync(".jWOOrt");
                 var descriptionNode = await page.QuerySelectorAsync(".jWOOrt");
 
                 var description = await descriptionNode.EvaluateFunctionAsync<string>("e => e.innerText");
                 Console.WriteLine(description);
 
-                GreaterTrinkets.Add(new GreaterTrinket() { Name = name, Description=description, Image = image, HtmlGuide = "", Cost = 0, Tier = 'F' });
-                
+                GreaterTrinkets.Add(new GreaterTrinket() { Name = name, Description = description, Image = image, HtmlGuide = "", Cost = 0, Tier = 'F' });
+
                 await page.ClickAsync(".knbYrP");
             }
             await Browser.CloseAsync();
 
             context.GreaterTrinkets.AddRange(GreaterTrinkets);
             context.SaveChanges();
-            
-        }   
- 
+
+        }
         private async Task ScrapeSpells(HSBGDb context)
         {
 
@@ -156,7 +246,7 @@ namespace HSBGHelper.Utilities
                     spells.Add(new Spell() { Name = name, Image = image, Tier = i, HtmlGuide = "", spellSynergies = new List<Spell>(), minionSynergies = new List<Minion>(), heroSynergies = new List<Hero>() });
                 }
             }
-            
+
             Browser.CloseAsync().Wait();
 
             context.Spells.AddRange(spells);
@@ -184,8 +274,7 @@ namespace HSBGHelper.Utilities
         //     await File.WriteAllBytesAsync(path, imageBytes);
         //     }
         // }
-
-        public async Task ScrapeHeroInformation(HSBGDb context)
+        public async Task ScrapeAllHeroInformation(HSBGDb context)
         {
             var heroesPage = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=hero";
 
@@ -253,14 +342,16 @@ namespace HSBGHelper.Utilities
                     HtmlGuide = "",
                     spellSynergies = new List<Spell>(),
                     minionSynergies = new List<Minion>(),
-                    heroSynergies = new List<Hero>()
+                    heroSynergies = new List<Hero>(),
+                    Armor = 0,
+                    Mode = ""
                 });
 
                 // close the modal
                 await page.ClickAsync(".knbYrP");
             }
             context.Heroes.AddRange(heros);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
 
             Browser.CloseAsync().Wait();
         }
@@ -280,7 +371,7 @@ namespace HSBGHelper.Utilities
             minions.AddRange(await ScrapePirates());
             minions.AddRange(await ScrapeQuilboar());
             minions.AddRange(await ScrapeUndead());
-            
+
             // await DownloadImagesAsync(minions);
 
             minions.AddRange(await ScrapeNeutral(minions));
@@ -336,22 +427,24 @@ namespace HSBGHelper.Utilities
 
                 Console.WriteLine(name);
 
-                minions.Add(new Minion() { 
-                    Name = name, 
-                    Image = image, 
-                    Type = type, 
-                    Tier = tier, 
+                minions.Add(new Minion()
+                {
+                    Name = name,
+                    Image = image,
+                    Type = type,
+                    Tier = tier,
                     HtmlGuide = "",
                     heroSynergies = new List<Hero>(),
                     minionSynergies = new List<Minion>(),
-                    spellSynergies = new List<Spell>()  
+                    spellSynergies = new List<Spell>()
                 });
             }
             Browser.CloseAsync().Wait();
 
             return minions;
         }
-        public async Task<List<Minion>> scrapeNeutralMinionsOnPage(List<Minion> minionsInDb, int tier) {
+        public async Task<List<Minion>> scrapeNeutralMinionsOnPage(List<Minion> minionsInDb, int tier)
+        {
             Console.WriteLine($"Scraping Neutral Minions: Tier {tier}");
             var pageUrl = $"https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=minion&tier={tier}";
 
@@ -377,33 +470,36 @@ namespace HSBGHelper.Utilities
                 var image = minionNode.EvaluateFunctionAsync<string>("e => e.src").Result;
 
                 // if minion is already in db
-                if (!minionsInDb.Any(m => m.Name == name)) {
+                if (!minionsInDb.Any(m => m.Name == name))
+                {
                     Console.WriteLine(name);
-                    minions.Add(new Minion() 
-                    { 
-                        Name = name, 
-                        Image = image, 
-                        Type = "Neutral", 
-                        Tier = tier, 
-                        HtmlGuide = "", 
-                        heroSynergies = new List<Hero>(), 
-                        minionSynergies = new List<Minion>(), 
-                        spellSynergies = new List<Spell>()  
+                    minions.Add(new Minion()
+                    {
+                        Name = name,
+                        Image = image,
+                        Type = "Neutral",
+                        Tier = tier,
+                        HtmlGuide = "",
+                        heroSynergies = new List<Hero>(),
+                        minionSynergies = new List<Minion>(),
+                        spellSynergies = new List<Spell>()
                     });
                 }
             }
             Browser.CloseAsync().Wait();
             return minions;
         }
-        public async Task<List<Minion>> ScrapeNeutral(List<Minion> minionsInDb) {
+        public async Task<List<Minion>> ScrapeNeutral(List<Minion> minionsInDb)
+        {
             var minions = new List<Minion>();
 
-            for (int i=1; i<=7; i++) {
+            for (int i = 1; i <= 7; i++)
+            {
                 minions.AddRange(await scrapeNeutralMinionsOnPage(minionsInDb, i));
             }
             return minions;
         }
-        
+
         public async Task<List<Minion>> ScrapeBeasts()
         {
             Console.WriteLine("Scraping Beasts");
