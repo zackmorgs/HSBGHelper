@@ -37,14 +37,17 @@ namespace HSBGHelper.Utilities
 
                 var program = new Program();
 
-                // await program.ScrapeMinions(context);
+                await program.ScrapeMinions(context);
+                await program.SetMinionMode(context);
+
                 await program.ScrapeAllHeroInformation(context);
                 await program.SetHeroMode(context);
-                // await program.ScrapeSpells(context);
-                // await program.ScrapeGreaterTrinkets(context);
-                // await program.ScrapeLesserTrinkets(context);
 
-                // await program.CleanupMinions(context);
+                await program.ScrapeSpells(context);
+                await program.SetSpellMode(context);
+
+                await program.ScrapeGreaterTrinkets(context);
+                await program.ScrapeLesserTrinkets(context);
             }
         }
         private async Task SetHeroMode(HSBGDb context)
@@ -119,22 +122,190 @@ namespace HSBGHelper.Utilities
             // Close the browser
             await Browser.CloseAsync();
         }
-        private async Task CleanupMinions(HSBGDb context)
+        public async Task ScrapeMinions(HSBGDb context)
         {
-            var minions = context.Minions.ToList();
-            // remove duplicate minions
-            foreach (var minion in minions)
+            Console.WriteLine("Scraping minions");
+            var minions = new List<Minion>();
+
+            for (int i = 1; i <= 7; i++)
             {
-                var duplicateMinions = context.Minions.Where(m => m.Name == minion.Name).ToList();
-                if (duplicateMinions.Count > 1)
+                var path = $"https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=minion&tier={i}";
+                minions.AddRange(await scrapeMinionsOnPage(path, i));
+            }
+
+            // await DownloadImagesAsync(minions);
+
+            context.Minions.AddRange(minions);
+            context.SaveChanges();
+        }
+        public async Task<List<Minion>> scrapeMinionsOnPage(string path, int tier)
+        {
+            // we gotta literally download chrome to start this up
+            var browserFetcher = new BrowserFetcher();
+            await browserFetcher.DownloadAsync();
+            await using var Browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+
+            // prepare minion list
+            var minions = new List<Minion>();
+
+            // create a new page
+            var page = await Browser.NewPageAsync();
+
+            // go to the page and wait for the selector to load
+            await page.GoToAsync(path); 
+            
+            // wait till dom content is loaded
+            await page.WaitForSelectorAsync("body");
+            await Task.Delay(1000);
+
+            await page.WaitForSelectorAsync("#MainCardGrid .CardImage");
+
+            var minionNodes = await page.QuerySelectorAllAsync("#MainCardGrid .CardImage");
+            
+
+            foreach (var minionNode in minionNodes)
+            {
+                var name = await minionNode.EvaluateFunctionAsync<string>("e => e.alt");
+                var image = await minionNode.EvaluateFunctionAsync<string>("e => e.src");
+
+
+                minionNode.ClickAsync().Wait();
+
+                // wait a second to avoid rate limiting
+
+                await page.WaitForSelectorAsync("[class*=CardDetailsLayout__CardFlavorText]");
+
+                var descriptionNode = await page.QuerySelectorAsync("[class*=CardDetailsLayout__CardFlavorText]");
+                var description = await descriptionNode.EvaluateFunctionAsync<string>("e => e.innerText");
+
+                var keywords = new List<string>();
+                try
                 {
-                    // remove all but the first minion
-                    for (int i = 1; i < duplicateMinions.Count; i++)
+                    // await page.WaitForSelectorAsync("[class*=CardKeywords__KeywordsList] a");
+                    var keywordsNodes = await page.QuerySelectorAllAsync("[class*=CardKeywords__KeywordsList] a");
+                    foreach (var keywordNode in keywordsNodes)
                     {
-                        context.Minions.Remove(duplicateMinions[i]);
+                        var keyword = await keywordNode.EvaluateFunctionAsync<string>("e => e.innerText");
+                        keywords.Add(keyword);
                     }
                 }
+                catch (Exception e)
+                {
+                    Console.WriteLine("No keywords found");
+                }
+
+                var type = "Neutral";
+
+                try
+                {
+                    // await page.WaitForSelectorAsync(".DPOYe li:nth-child(3) .value");
+                    var typeNode = await page.QuerySelectorAsync(".DPOYe li:nth-child(3) .value");
+
+                    type = await typeNode.EvaluateFunctionAsync<string>("e => e.innerText");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("No type found - labeled Neutral");
+
+                }
+
+
+                Console.WriteLine("Minion found: " + name + ", Type: " + type);
+
+                minions.Add(new Minion()
+                {
+                    Name = name,
+                    Image = image,
+                    Type = type,
+                    Tier = tier,
+                    Description = description,
+                    HtmlGuide = "",
+                    heroSynergies = new List<Hero>(),
+                    minionSynergies = new List<Minion>(),
+                    spellSynergies = new List<Spell>(),
+                    Keywords = keywords,
+                    Mode = ""
+                });
+
+
+
+                // close the modal
+                await page.WaitForSelectorAsync("[class*=Modal__ModalContent] a:first-child");
+                await page.ClickAsync("[class*=Modal__ModalContent] a:first-child");
             }
+
+
+            Browser.CloseAsync().Wait();
+
+            return minions;
+        }
+        private async Task SetMinionMode(HSBGDb context)
+        {
+            string solosPath = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=minion&bgGameMode=solos";
+            string duosPath = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=minion&bgGameMode=duos";
+
+            List<string> soloMinionNames = new List<string>();
+            List<string> duoMinionNames = new List<string>();
+
+            // get name of all solo minions
+
+            var browserFetcher = new BrowserFetcher();
+            await browserFetcher.DownloadAsync();
+            await using var Browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+
+            var page = await Browser.NewPageAsync();
+            
+            // Get solo mode heroes
+            await page.GoToAsync(solosPath);
+            await page.WaitForSelectorAsync("img.CardImage");
+
+            var soloMinionNodes = await page.QuerySelectorAllAsync("img.CardImage");
+
+            foreach (var soloMinionNode in soloMinionNodes)
+            {
+                var name = await soloMinionNode.EvaluateFunctionAsync<string>("e => e.alt");
+                soloMinionNames.Add(name);
+            }
+
+            // Get duo mode heroes
+            await page.GoToAsync(duosPath);
+
+            await page.WaitForSelectorAsync("img.CardImage");
+
+            var duoMinionNodes = await page.QuerySelectorAllAsync("img.CardImage");
+
+            foreach (var duoMinionNode in duoMinionNodes)
+            {
+                var name = await duoMinionNode.EvaluateFunctionAsync<string>("e => e.alt");
+                duoMinionNames.Add(name);
+            }
+
+            var minions = context.Minions.ToList();
+
+            foreach (var minion in minions)
+            {
+                if (soloMinionNames.Contains(minion.Name) && duosPath.Contains(minion.Name))
+                {
+                    Console.WriteLine(minion.Name + " is in both modes");
+                    minion.Mode = "Both";
+                }
+                else if (soloMinionNames.Contains(minion.Name))
+                {
+                    Console.WriteLine(minion.Name + " is in solo mode");
+                    minion.Mode = "Solo";
+                }
+                else if (duoMinionNames.Contains(minion.Name))
+                {
+                    Console.WriteLine(minion.Name + " is in duo mode");
+                    minion.Mode = "Duo";
+                }
+                else
+                {
+                    Console.WriteLine(minion.Name + " not found in either mode");
+                }
+            }
+
+            context.Minions.UpdateRange(minions);
             await context.SaveChangesAsync();
         }
         private async Task ScrapeLesserTrinkets(HSBGDb context)
@@ -243,7 +414,7 @@ namespace HSBGHelper.Utilities
                     var name = await spellNode.EvaluateFunctionAsync<string>("e => e.alt");
                     var image = await spellNode.EvaluateFunctionAsync<string>("e => e.src");
                     Console.WriteLine("Spell Found: " + name);
-                    spells.Add(new Spell() { Name = name, Image = image, Tier = i, HtmlGuide = "", spellSynergies = new List<Spell>(), minionSynergies = new List<Minion>(), heroSynergies = new List<Hero>() });
+                    spells.Add(new Spell() { Name = name, Image = image, Tier = i, HtmlGuide = "", spellSynergies = new List<Spell>(), minionSynergies = new List<Minion>(), heroSynergies = new List<Hero>(), Mode = "" });
                 }
             }
 
@@ -252,28 +423,75 @@ namespace HSBGHelper.Utilities
             context.Spells.AddRange(spells);
             context.SaveChanges();
         }
-        // private async Task DownloadImageAsyncIfNotExists(string path, string fileName, Uri uri)
-        // {
-        //     using var httpClient = new HttpClient();
-        //     // await Task.Delay(500);
+        private async Task SetSpellMode(HSBGDb context)
+        {
+            string solosPath = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=spell&bgGameMode=solos";
+            string duosPath = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=spell&bgGameMode=duos";
 
-        //     // Get the file extension
-        //     var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
-        //     var fileExtension = Path.GetExtension(uriWithoutQuery);
+            List<string> soloSpellNames = new List<string>();
+            List<string> duoSpellNames = new List<string>();
 
-        //     // Create file path and ensure directory exists
-        //     var path = Path.Combine($"{fileName.ToLower().Replace(" ","")}{fileExtension}");
-        //     // Directory.CreateDirectory(directoryPath);
+            // get name of all solo minions
 
-        //     // check if the file exists
-        //     if (File.Exists(path)) {
-        //         return;
-        //     } else {
-        //     // Download the image and write to the file
-        //     var imageBytes = await httpClient.GetByteArrayAsync(uri);
-        //     await File.WriteAllBytesAsync(path, imageBytes);
-        //     }
-        // }
+            var browserFetcher = new BrowserFetcher();
+            await browserFetcher.DownloadAsync();
+            await using var Browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+
+            var page = await Browser.NewPageAsync();
+
+            // Get solo mode heroes
+            await page.GoToAsync(solosPath);
+
+            await page.WaitForSelectorAsync("img.CardImage");
+
+            var soloSpellNodes = await page.QuerySelectorAllAsync("img.CardImage");
+
+            foreach (var soloSpellNode in soloSpellNodes)
+            {
+                var name = await soloSpellNode.EvaluateFunctionAsync<string>("e => e.alt");
+                soloSpellNames.Add(name);
+            }
+
+            // Get duo mode heroes
+            await page.GoToAsync(duosPath);
+
+            await page.WaitForSelectorAsync("img.CardImage");
+
+            var duoSpellNodes = await page.QuerySelectorAllAsync("img.CardImage");
+
+            foreach (var duoSpellNode in duoSpellNodes)
+            {
+                var name = await duoSpellNode.EvaluateFunctionAsync<string>("e => e.alt");
+                duoSpellNames.Add(name);
+            }
+
+            var spells = context.Spells.ToList();
+
+            foreach (var spell in spells)
+            {
+                if (soloSpellNames.Contains(spell.Name) && duoSpellNames.Contains(spell.Name))
+                {
+                    Console.WriteLine(spell.Name + " is in both modes");
+                    spell.Mode = "Both";
+                }
+                else if (soloSpellNames.Contains(spell.Name))
+                {
+                    Console.WriteLine(spell.Name + " is in solo mode");
+                    spell.Mode = "Solo";
+                }
+                else if (duoSpellNames.Contains(spell.Name))
+                {
+                    Console.WriteLine(spell.Name + " is in duo mode");
+                    spell.Mode = "Duo";
+                }
+                else
+                {
+                    Console.WriteLine(spell.Name + " not found in either mode");
+                }
+            }
+
+
+        }
         public async Task ScrapeAllHeroInformation(HSBGDb context)
         {
             var heroesPage = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=hero";
@@ -347,6 +565,9 @@ namespace HSBGHelper.Utilities
                     Mode = ""
                 });
 
+                // add a delay
+                await Task.Delay(250);
+
                 // close the modal
                 await page.ClickAsync(".knbYrP");
             }
@@ -355,31 +576,6 @@ namespace HSBGHelper.Utilities
 
             Browser.CloseAsync().Wait();
         }
-
-        public async Task ScrapeMinions(HSBGDb context)
-        {
-            Console.WriteLine("Scraping minions");
-            var minions = new List<Minion>();
-
-            minions.AddRange(await ScrapeBeasts());
-            minions.AddRange(await ScrapeDemons());
-            minions.AddRange(await ScrapeDragons());
-            minions.AddRange(await ScrapeElementals());
-            minions.AddRange(await ScrapeMechs());
-            minions.AddRange(await ScrapeMurlocs());
-            minions.AddRange(await ScrapeNaga());
-            minions.AddRange(await ScrapePirates());
-            minions.AddRange(await ScrapeQuilboar());
-            minions.AddRange(await ScrapeUndead());
-
-            // await DownloadImagesAsync(minions);
-
-            minions.AddRange(await ScrapeNeutral(minions));
-
-            context.Minions.AddRange(minions);
-            context.SaveChanges();
-        }
-
         public async Task DownloadImagesAsync(List<Minion> minions)
         {
             foreach (var minion in minions)
@@ -400,322 +596,6 @@ namespace HSBGHelper.Utilities
                     await File.WriteAllBytesAsync(path, imageBytes);
                 }
             }
-        }
-
-        public async Task<List<Minion>> scrapeMinionsOnPage(string path, string type, int tier)
-        {
-            // we gotta literally download chrome to start this up
-            var browserFetcher = new BrowserFetcher();
-            await browserFetcher.DownloadAsync();
-            await using var Browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
-
-            // prepare minion list
-            var minions = new List<Minion>();
-
-            // create a new page
-            var page = await Browser.NewPageAsync();
-
-            // go to the page and wait for the selector to load
-            await page.GoToAsync(path);
-            await page.WaitForSelectorAsync("#MainCardGrid .CardImage");
-            var minionNodes = await page.QuerySelectorAllAsync("#MainCardGrid .CardImage");
-
-            foreach (var minionNode in minionNodes)
-            {
-                var name = await minionNode.EvaluateFunctionAsync<string>("e => e.alt");
-                var image = await minionNode.EvaluateFunctionAsync<string>("e => e.src");
-
-                Console.WriteLine(name);
-
-                minions.Add(new Minion()
-                {
-                    Name = name,
-                    Image = image,
-                    Type = type,
-                    Tier = tier,
-                    HtmlGuide = "",
-                    heroSynergies = new List<Hero>(),
-                    minionSynergies = new List<Minion>(),
-                    spellSynergies = new List<Spell>()
-                });
-            }
-            Browser.CloseAsync().Wait();
-
-            return minions;
-        }
-        public async Task<List<Minion>> scrapeNeutralMinionsOnPage(List<Minion> minionsInDb, int tier)
-        {
-            Console.WriteLine($"Scraping Neutral Minions: Tier {tier}");
-            var pageUrl = $"https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=minion&tier={tier}";
-
-            // we gotta literally download chrome to start this up
-            var browserFetcher = new BrowserFetcher();
-            browserFetcher.DownloadAsync().Wait();
-            using var Browser = Puppeteer.LaunchAsync(new LaunchOptions { Headless = true }).Result;
-
-            // prepare minion list
-            var minions = new List<Minion>();
-
-            // create a new page
-            var page = Browser.NewPageAsync().Result;
-
-            // go to the page and wait for the selector to load
-            page.GoToAsync(pageUrl).Wait();
-            page.WaitForSelectorAsync("#MainCardGrid .CardImage").Wait();
-            var minionNodes = page.QuerySelectorAllAsync("#MainCardGrid .CardImage").Result;
-
-            foreach (var minionNode in minionNodes)
-            {
-                var name = minionNode.EvaluateFunctionAsync<string>("e => e.alt").Result;
-                var image = minionNode.EvaluateFunctionAsync<string>("e => e.src").Result;
-
-                // if minion is already in db
-                if (!minionsInDb.Any(m => m.Name == name))
-                {
-                    Console.WriteLine(name);
-                    minions.Add(new Minion()
-                    {
-                        Name = name,
-                        Image = image,
-                        Type = "Neutral",
-                        Tier = tier,
-                        HtmlGuide = "",
-                        heroSynergies = new List<Hero>(),
-                        minionSynergies = new List<Minion>(),
-                        spellSynergies = new List<Spell>()
-                    });
-                }
-            }
-            Browser.CloseAsync().Wait();
-            return minions;
-        }
-        public async Task<List<Minion>> ScrapeNeutral(List<Minion> minionsInDb)
-        {
-            var minions = new List<Minion>();
-
-            for (int i = 1; i <= 7; i++)
-            {
-                minions.AddRange(await scrapeNeutralMinionsOnPage(minionsInDb, i));
-            }
-            return minions;
-        }
-
-        public async Task<List<Minion>> ScrapeBeasts()
-        {
-            Console.WriteLine("Scraping Beasts");
-            var beasts = new List<Minion>();
-
-            string path1 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=beast&tier=1";
-            beasts.AddRange(await scrapeMinionsOnPage(path1, "Beast", 1));
-            string path2 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=beast&tier=2";
-            beasts.AddRange(await scrapeMinionsOnPage(path2, "Beast", 2));
-            string path3 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=beast&tier=3";
-            beasts.AddRange(await scrapeMinionsOnPage(path3, "Beast", 3));
-            string path4 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=beast&tier=4";
-            beasts.AddRange(await scrapeMinionsOnPage(path4, "Beast", 4));
-            string path5 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=beast&tier=5";
-            beasts.AddRange(await scrapeMinionsOnPage(path5, "Beast", 5));
-            string path6 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=beast&tier=6";
-            beasts.AddRange(await scrapeMinionsOnPage(path6, "Beast", 6));
-            string path7 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=beast&tier=7";
-            beasts.AddRange(await scrapeMinionsOnPage(path7, "Beast", 7));
-            return beasts;
-        }
-
-        public async Task<List<Minion>> ScrapeDemons()
-        {
-            Console.WriteLine("Scraping Demons");
-            var minions = new List<Minion>();
-            string path1 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=demon&tier=1";
-            minions.AddRange(await scrapeMinionsOnPage(path1, "Demon", 1));
-            string path2 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=demon&tier=2";
-            minions.AddRange(await scrapeMinionsOnPage(path2, "Demon", 2));
-            string path3 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=demon&tier=3";
-            minions.AddRange(await scrapeMinionsOnPage(path3, "Demon", 3));
-            string path4 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=demon&tier=4";
-            minions.AddRange(await scrapeMinionsOnPage(path4, "Demon", 4));
-            string path5 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=demon&tier=5";
-            minions.AddRange(await scrapeMinionsOnPage(path5, "Demon", 5));
-            string path6 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=demon&tier=6";
-            minions.AddRange(await scrapeMinionsOnPage(path6, "Demon", 6));
-            string path7 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=demon&tier=7";
-            minions.AddRange(await scrapeMinionsOnPage(path7, "Demon", 7));
-            return minions;
-        }
-
-        public async Task<List<Minion>> ScrapeDragons()
-        {
-            Console.WriteLine("Scraping Dragons");
-            var minions = new List<Minion>();
-            string path1 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=dragon&tier=1";
-            minions.AddRange(await scrapeMinionsOnPage(path1, "Dragon", 1));
-            string path2 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=dragon&tier=2";
-            minions.AddRange(await scrapeMinionsOnPage(path2, "Dragon", 2));
-            string path3 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=dragon&tier=3";
-            minions.AddRange(await scrapeMinionsOnPage(path3, "Dragon", 3));
-            string path4 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=dragon&tier=4";
-            minions.AddRange(await scrapeMinionsOnPage(path4, "Dragon", 4));
-            string path5 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=dragon&tier=5";
-            minions.AddRange(await scrapeMinionsOnPage(path5, "Dragon", 5));
-            string path6 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=dragon&tier=6";
-            minions.AddRange(await scrapeMinionsOnPage(path6, "Dragon", 6));
-            string path7 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=dragon&tier=7";
-            minions.AddRange(await scrapeMinionsOnPage(path7, "Dragon", 7));
-            return minions;
-        }
-
-        public async Task<List<Minion>> ScrapeElementals()
-        {
-            Console.WriteLine("Scraping Elementals");
-            var minions = new List<Minion>();
-            string path1 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=elemental&tier=1";
-            minions.AddRange(await scrapeMinionsOnPage(path1, "Elemental", 1));
-            string path2 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=elemental&tier=2";
-            minions.AddRange(await scrapeMinionsOnPage(path2, "Elemental", 2));
-            string path3 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=elemental&tier=3";
-            minions.AddRange(await scrapeMinionsOnPage(path3, "Elemental", 3));
-            string path4 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=elemental&tier=4";
-            minions.AddRange(await scrapeMinionsOnPage(path4, "Elemental", 4));
-            string path5 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=elemental&tier=5";
-            minions.AddRange(await scrapeMinionsOnPage(path5, "Elemental", 5));
-            string path6 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=elemental&tier=6";
-            minions.AddRange(await scrapeMinionsOnPage(path6, "Elemental", 6));
-            string path7 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=elemental&tier=7";
-            minions.AddRange(await scrapeMinionsOnPage(path7, "Elemental", 7));
-            return minions;
-        }
-
-        public async Task<List<Minion>> ScrapeMechs()
-        {
-            Console.WriteLine("Scraping Mechs");
-            var minions = new List<Minion>();
-            string path1 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=mech&tier=1";
-            minions.AddRange(await scrapeMinionsOnPage(path1, "Mech", 1));
-            string path2 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=mech&tier=2";
-            minions.AddRange(await scrapeMinionsOnPage(path2, "Mech", 2));
-            string path3 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=mech&tier=3";
-            minions.AddRange(await scrapeMinionsOnPage(path3, "Mech", 3));
-            string path4 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=mech&tier=4";
-            minions.AddRange(await scrapeMinionsOnPage(path4, "Mech", 4));
-            string path5 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=mech&tier=5";
-            minions.AddRange(await scrapeMinionsOnPage(path5, "Mech", 5));
-            string path6 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=mech&tier=6";
-            minions.AddRange(await scrapeMinionsOnPage(path6, "Mech", 6));
-            string path7 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=mech&tier=7";
-            minions.AddRange(await scrapeMinionsOnPage(path7, "Mech", 7));
-            return minions;
-        }
-
-        public async Task<List<Minion>> ScrapeMurlocs()
-        {
-            Console.WriteLine("Scrape Murlocs");
-
-            var minions = new List<Minion>();
-            string path1 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=murloc&tier=1";
-            minions.AddRange(await scrapeMinionsOnPage(path1, "Murloc", 1));
-            string path2 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=murloc&tier=2";
-            minions.AddRange(await scrapeMinionsOnPage(path2, "Murloc", 2));
-            string path3 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=murloc&tier=3";
-            minions.AddRange(await scrapeMinionsOnPage(path3, "Murloc", 3));
-            string path4 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=murloc&tier=4";
-            minions.AddRange(await scrapeMinionsOnPage(path4, "Murloc", 4));
-            string path5 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=murloc&tier=5";
-            minions.AddRange(await scrapeMinionsOnPage(path5, "Murloc", 5));
-            string path6 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=murloc&tier=6";
-            minions.AddRange(await scrapeMinionsOnPage(path6, "Murloc", 6));
-            string path7 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=murloc&tier=7";
-            minions.AddRange(await scrapeMinionsOnPage(path7, "Murloc", 7));
-            return minions;
-
-        }
-
-        public async Task<List<Minion>> ScrapeNaga()
-        {
-            Console.WriteLine("Scraping Naga");
-            var minions = new List<Minion>();
-            string path1 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=naga&tier=1";
-            minions.AddRange(await scrapeMinionsOnPage(path1, "Naga", 1));
-            string path2 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=naga&tier=2";
-            minions.AddRange(await scrapeMinionsOnPage(path2, "Naga", 2));
-            string path3 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=naga&tier=3";
-            minions.AddRange(await scrapeMinionsOnPage(path3, "Naga", 3));
-            string path4 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=naga&tier=4";
-            minions.AddRange(await scrapeMinionsOnPage(path4, "Naga", 4));
-            string path5 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=naga&tier=5";
-            minions.AddRange(await scrapeMinionsOnPage(path5, "Naga", 5));
-            string path6 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=naga&tier=6";
-            minions.AddRange(await scrapeMinionsOnPage(path6, "Naga", 6));
-            string path7 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=naga&tier=7";
-            minions.AddRange(await scrapeMinionsOnPage(path7, "Naga", 7));
-            return minions;
-        }
-
-        public async Task<List<Minion>> ScrapePirates()
-        {
-            Console.WriteLine("Scraping Pirates");
-            var minions = new List<Minion>();
-
-            string path1 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=pirate&tier=1";
-            minions.AddRange(await scrapeMinionsOnPage(path1, "Pirate", 1));
-            string path2 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=pirate&tier=2";
-            minions.AddRange(await scrapeMinionsOnPage(path2, "Pirate", 2));
-            string path3 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=pirate&tier=3";
-            minions.AddRange(await scrapeMinionsOnPage(path3, "Pirate", 3));
-            string path4 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=pirate&tier=4";
-            minions.AddRange(await scrapeMinionsOnPage(path4, "Pirate", 4));
-            string path5 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=pirate&tier=5";
-            minions.AddRange(await scrapeMinionsOnPage(path5, "Pirate", 5));
-            string path6 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=pirate&tier=6";
-            minions.AddRange(await scrapeMinionsOnPage(path6, "Pirate", 6));
-            string path7 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=pirate&tier=7";
-            minions.AddRange(await scrapeMinionsOnPage(path7, "Pirate", 7));
-
-            return minions;
-        }
-
-        public async Task<List<Minion>> ScrapeQuilboar()
-        {
-            Console.WriteLine("Scraping Quilboar");
-            var minions = new List<Minion>();
-
-            string path1 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=quilboar&tier=1";
-            minions.AddRange(await scrapeMinionsOnPage(path1, "Quilboar", 1));
-            string path2 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=quilboar&tier=2";
-            minions.AddRange(await scrapeMinionsOnPage(path2, "Quilboar", 2));
-            string path3 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=quilboar&tier=3";
-            minions.AddRange(await scrapeMinionsOnPage(path3, "Quilboar", 3));
-            string path4 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=quilboar&tier=4";
-            minions.AddRange(await scrapeMinionsOnPage(path4, "Quilboar", 4));
-            string path5 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=quilboar&tier=5";
-            minions.AddRange(await scrapeMinionsOnPage(path5, "Quilboar", 5));
-            string path6 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=quilboar&tier=6";
-            minions.AddRange(await scrapeMinionsOnPage(path6, "Quilboar", 6));
-            string path7 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=quilboar&tier=7";
-            minions.AddRange(await scrapeMinionsOnPage(path7, "Quilboar", 7));
-            return minions;
-        }
-
-        public async Task<List<Minion>> ScrapeUndead()
-        {
-            Console.WriteLine("Scraping Murlocs");
-            var minions = new List<Minion>();
-
-            string path1 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=undead&tier=1";
-            minions.AddRange(await scrapeMinionsOnPage(path1, "Undead", 1));
-            string path2 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=undead&tier=2";
-            minions.AddRange(await scrapeMinionsOnPage(path2, "Undead", 2));
-            string path3 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=undead&tier=3";
-            minions.AddRange(await scrapeMinionsOnPage(path3, "Undead", 3));
-            string path4 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=undead&tier=4";
-            minions.AddRange(await scrapeMinionsOnPage(path4, "Undead", 4));
-            string path5 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=undead&tier=5";
-            minions.AddRange(await scrapeMinionsOnPage(path5, "Undead", 5));
-            string path6 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=undead&tier=6";
-            minions.AddRange(await scrapeMinionsOnPage(path6, "Undead", 6));
-            string path7 = "https://hearthstone.blizzard.com/en-us/battlegrounds?minionType=undead&tier=7";
-            minions.AddRange(await scrapeMinionsOnPage(path7, "Undead", 7));
-
-            return minions;
         }
     }
 }
