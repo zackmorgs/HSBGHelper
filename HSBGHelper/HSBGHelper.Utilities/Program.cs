@@ -156,7 +156,7 @@ namespace HSBGHelper.Utilities
             
             // wait till dom content is loaded
             await page.WaitForSelectorAsync("body");
-            await Task.Delay(1000);
+            await Task.Delay(2000);
 
             await page.WaitForSelectorAsync("#MainCardGrid .CardImage");
 
