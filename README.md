@@ -21,7 +21,7 @@ A Blazor app that helps Hearthstone: Battlegrounds players make intelligent deci
 
 
 ## Note:
-In development for the newest season of Battlegrounds. 
+In development for the newest season of Battlegrounds. (Trinket meta)
 
 ## How to run:
 - Clone this repository and open the directory in powershell.

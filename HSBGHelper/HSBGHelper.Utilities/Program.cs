@@ -50,78 +50,7 @@ namespace HSBGHelper.Utilities
                 await program.ScrapeLesserTrinkets(context);
             }
         }
-        private async Task SetHeroMode(HSBGDb context)
-        {
-            var herosNoMode = context.Heroes.ToList();
 
-            string solosPath = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=hero&bgGameMode=solos";
-            string duosPath = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=hero&bgGameMode=duos";
-
-            var browserFetcher = new BrowserFetcher();
-            await browserFetcher.DownloadAsync();
-            await using var Browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
-
-            var page = await Browser.NewPageAsync();
-
-            // Get solo mode heroes
-            await page.GoToAsync(solosPath);
-            await page.WaitForSelectorAsync("img.hero");
-
-            var soloHeroNodes = await page.QuerySelectorAllAsync("img.hero");
-
-            var soloHeroNames = new List<string>();
-            foreach (var soloHeroNode in soloHeroNodes)
-            {
-                var name = await soloHeroNode.EvaluateFunctionAsync<string>("e => e.alt");
-                Console.WriteLine("Solo Hero Found: " + name);
-                soloHeroNames.Add(name);
-            }
-
-            // Get duo mode heroes
-            await page.GoToAsync(duosPath);
-            await page.WaitForSelectorAsync("img.hero");
-
-            var duosHeroNodes = await page.QuerySelectorAllAsync("img.hero");
-
-            var duoHeroNames = new List<string>();
-            foreach (var duoHeroNode in duosHeroNodes)
-            {
-                var name = await duoHeroNode.EvaluateFunctionAsync<string>("e => e.alt");
-                Console.WriteLine("Duo Hero Found: " + name);
-                duoHeroNames.Add(name); // Add to the correct list
-            }
-
-            // Categorize heroes into three modes: Solo, Duo, or Both
-            foreach (var hero in herosNoMode)
-            {
-                if (soloHeroNames.Contains(hero.Name) && duoHeroNames.Contains(hero.Name))
-                {
-                    Console.WriteLine(hero.Name + " is in both modes");
-                    hero.Mode = "Both";
-                }
-                else if (soloHeroNames.Contains(hero.Name))
-                {
-                    Console.WriteLine(hero.Name + " is in solo mode");
-                    hero.Mode = "Solo";
-                }
-                else if (duoHeroNames.Contains(hero.Name))
-                {
-                    Console.WriteLine(hero.Name + " is in duo mode");
-                    hero.Mode = "Duo";
-                }
-                else
-                {
-                    Console.WriteLine(hero.Name + " not found in either mode");
-                }
-            }
-
-            // Update heroes in the database
-            context.Heroes.UpdateRange(herosNoMode);
-            await context.SaveChangesAsync();
-
-            // Close the browser
-            await Browser.CloseAsync();
-        }
         public async Task ScrapeMinions(HSBGDb context)
         {
             Console.WriteLine("Scraping minions");
@@ -155,8 +84,9 @@ namespace HSBGHelper.Utilities
             await page.GoToAsync(path); 
             
             // wait till dom content is loaded
-            await page.WaitForSelectorAsync("body");
-            await Task.Delay(2000);
+            await Task.Delay(3000);
+
+            await page.WaitForSelectorAsync("html");
 
             await page.WaitForSelectorAsync("#MainCardGrid .CardImage");
 
@@ -224,7 +154,8 @@ namespace HSBGHelper.Utilities
                     minionSynergies = new List<Minion>(),
                     spellSynergies = new List<Spell>(),
                     Keywords = keywords,
-                    Mode = ""
+                    inDuosMode = false,
+                    inSoloMode = false
                 });
 
 
@@ -255,6 +186,8 @@ namespace HSBGHelper.Utilities
 
             var page = await Browser.NewPageAsync();
             
+            await page.QuerySelectorAllAsync("body");
+
             // Get solo mode heroes
             await page.GoToAsync(solosPath);
             await page.WaitForSelectorAsync("img.CardImage");
@@ -270,6 +203,8 @@ namespace HSBGHelper.Utilities
             // Get duo mode heroes
             await page.GoToAsync(duosPath);
 
+            await page.QuerySelectorAllAsync("body");
+
             await page.WaitForSelectorAsync("img.CardImage");
 
             var duoMinionNodes = await page.QuerySelectorAllAsync("img.CardImage");
@@ -284,20 +219,15 @@ namespace HSBGHelper.Utilities
 
             foreach (var minion in minions)
             {
-                if (soloMinionNames.Contains(minion.Name) && duosPath.Contains(minion.Name))
+                if (soloMinionNames.Contains(minion.Name))
                 {
                     Console.WriteLine(minion.Name + " is in both modes");
-                    minion.Mode = "Both";
-                }
-                else if (soloMinionNames.Contains(minion.Name))
-                {
-                    Console.WriteLine(minion.Name + " is in solo mode");
-                    minion.Mode = "Solo";
+                    minion.inSoloMode = true;
                 }
                 else if (duoMinionNames.Contains(minion.Name))
                 {
                     Console.WriteLine(minion.Name + " is in duo mode");
-                    minion.Mode = "Duo";
+                    minion.inDuosMode = true;
                 }
                 else
                 {
@@ -407,6 +337,8 @@ namespace HSBGHelper.Utilities
                 string path = $"https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=spell&tier={i}";
                 var page = await Browser.NewPageAsync();
                 await page.GoToAsync(path);
+                await Task.Delay(3000);
+
                 await page.WaitForSelectorAsync("#MainCardGrid .CardImage");
                 var spellNodes = await page.QuerySelectorAllAsync("#MainCardGrid .CardImage");
                 foreach (var spellNode in spellNodes)
@@ -562,7 +494,8 @@ namespace HSBGHelper.Utilities
                     minionSynergies = new List<Minion>(),
                     heroSynergies = new List<Hero>(),
                     Armor = 0,
-                    Mode = ""
+                    inSoloMode = false,
+                    inDuosMode = false
                 });
 
                 // add a delay
@@ -575,6 +508,69 @@ namespace HSBGHelper.Utilities
             await context.SaveChangesAsync();
 
             Browser.CloseAsync().Wait();
+        }
+        private async Task SetHeroMode(HSBGDb context)
+        {
+            var herosNoMode = context.Heroes.ToList();
+
+            string solosPath = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=hero&bgGameMode=solos";
+            string duosPath = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=hero&bgGameMode=duos";
+
+            var browserFetcher = new BrowserFetcher();
+            await browserFetcher.DownloadAsync();
+            await using var Browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+
+            var page = await Browser.NewPageAsync();
+
+            // Get solo mode heroes
+            await page.GoToAsync(solosPath);
+            await page.WaitForSelectorAsync("img.hero");
+
+            var soloHeroNodes = await page.QuerySelectorAllAsync("img.hero");
+
+            var soloHeroNames = new List<string>();
+            foreach (var soloHeroNode in soloHeroNodes)
+            {
+                var name = await soloHeroNode.EvaluateFunctionAsync<string>("e => e.alt");
+                Console.WriteLine("Solo Hero Found: " + name);
+                soloHeroNames.Add(name);
+            }
+
+            // Get duo mode heroes
+            await page.GoToAsync(duosPath);
+            await page.WaitForSelectorAsync("img.hero");
+
+            var duosHeroNodes = await page.QuerySelectorAllAsync("img.hero");
+
+            var duoHeroNames = new List<string>();
+            foreach (var duoHeroNode in duosHeroNodes)
+            {
+                var name = await duoHeroNode.EvaluateFunctionAsync<string>("e => e.alt");
+                Console.WriteLine("Duo Hero Found: " + name);
+                duoHeroNames.Add(name); // Add to the correct list
+            }
+
+            // Categorize heroes into three modes: Solo, Duo, or Both
+            foreach (var hero in herosNoMode)
+            {
+                if (soloHeroNames.Contains(hero.Name))
+                {
+                    Console.WriteLine(hero.Name + " is in both modes");
+                    hero.inSoloMode = true;
+                }
+                else if (duoHeroNames.Contains(hero.Name))
+                {
+                    Console.WriteLine(hero.Name + " is in solo mode only");
+                    hero.inDuosMode = true;
+                }
+            }
+
+            // Update heroes in the database
+            context.Heroes.UpdateRange(herosNoMode);
+            await context.SaveChangesAsync();
+
+            // Close the browser
+            await Browser.CloseAsync();
         }
         public async Task DownloadImagesAsync(List<Minion> minions)
         {

@@ -10,6 +10,24 @@
 @inject HSBGDb dbContext
 
 @code {
+    public async Task OnModeChange(ChangeEventArgs e)
+    {
+        Mode = e.Value.ToString();
+        if (Mode == "Solo")
+        {
+            heroes = dbContext.Heroes.Where(x => x.inSoloMode == true).ToList();
+        }
+        else if (Mode == "Duo")
+        {
+            heroes = dbContext.Heroes.Where(x => x.inDuosMode == true).ToList();
+        }
+        else if (Mode == "Both")
+        {
+            heroes = dbContext.Heroes.ToList();
+        }
+        SortBy();
+    }
+    public string Mode { get; set; } = "Solo";
     private List<Hero> heroes { get; set; } = new List<Hero>();
     private List<Hero> filteredHeroes { get; set; } = new List<Hero>();
     private List<string> tiers = new List<string> { "S", "A", "B", "C", "D", "F" };
@@ -73,7 +91,7 @@
         ? heroes.OrderBy(x => x.Armor).ToList()
         : heroes.OrderByDescending(x => x.Armor).ToList();
 
-        if(shouldPaginate == true)
+        if (shouldPaginate == true)
         {
             filteredHeroes = filteredHeroes.Take(maxOnLoad).ToList();
         }
@@ -209,7 +227,16 @@
                     </li>
                 </ul>
             </div>
+            <div class="p-4 flex items-center">
+                <label for="modeFilter">Filter by Mode:</label>
+                <select id="modeFilter" @onchange="OnModeChange" class="ml-2">
+                    <option value="Solo">Solo</option>
+                    <option value="Duo">Duo</option>
+                    <option value="Both">Both</option>
+                </select>
+            </div>
         </div>
+
     </div>
 </section>
 <section>
@@ -236,7 +263,7 @@
                 <div class="p-4 flex items-center justify-center">
                     <a class="btn btn-primary mx-auto" @onclick="() => { shouldPaginate=false; SortBy(); }">
                         <span>Load More</span>
-                        <ArrowDownOutlined/>
+                        <ArrowDownOutlined />
                     </a>
                 </div>
             </div>
@@ -255,7 +282,14 @@
     }
 
     #controls {
-    @*margin:1rem;background-color:#ffffff47;*@border-radius: 0.5rem;
+    @*margin:1rem;background-color:#ffffff47;*@
+        border-radius: 0.5rem;
+    }
+
+    #modeFilter {
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        background-color: #ffffff47;
     }
 
     .control-list {
