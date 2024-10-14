@@ -317,9 +317,8 @@ namespace HSBGHelper.Utilities
             }
             await Browser.CloseAsync();
 
-            context.GreaterTrinkets.AddRange(GreaterTrinkets);
-            context.SaveChanges();
-
+            await context.GreaterTrinkets.AddRangeAsync(GreaterTrinkets);
+            await context.SaveChangesAsync();
         }
         private async Task SetTrinketMode(HSBGDb context)
         {
