@@ -37,85 +37,17 @@ namespace HSBGHelper.Utilities
 
                 var program = new Program();
 
-                try
-                {
-                    await program.ScrapeMinions(context);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("ScrapeMinions failed... " + e.Message);
-                }
 
-                try
-                {
-                    await program.SetMinionMode(context);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("SetMinionMode failed... " + e.Message);
-                }
+                await program.ScrapeMinions(context);
+                await program.SetMinionMode(context);
+                await program.ScrapeAllHeroInformation(context);
+                await program.SetHeroMode(context);
+                await program.ScrapeSpells(context);
+                await program.SetSpellMode(context);
+                await program.ScrapeGreaterTrinkets(context);
+                await program.ScrapeLesserTrinkets(context);
+                await program.SetTrinketMode(context);
 
-                try
-                {
-                    await program.ScrapeAllHeroInformation(context);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("ScrapeAllHeroInformation failed... " + e.Message);
-                }
-                try
-                {
-                    await program.SetHeroMode(context);
-
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("SetHeroMode failed... " + e.Message);
-                }
-                try
-                {
-                    await program.ScrapeSpells(context);
-
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("ScrapeSpells failed... " + e.Message);
-                }
-                try
-                {
-                    await program.SetSpellMode(context);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("SetSpellMode failed... " + e.Message);
-                }
-
-                try
-                {
-                    await program.ScrapeGreaterTrinkets(context);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("ScrapeGreaterTrinkets failed... " + e.Message);
-                }
-
-                try
-                {
-                    await program.ScrapeLesserTrinkets(context);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("ScrapeLesserTrinkets failed... " + e.Message);
-                }
-
-                try
-                {
-                    await program.SetTrinketMode(context);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("SetTrinketMode failed... " + e.Message);
-                }
             }
         }
 
@@ -433,7 +365,7 @@ namespace HSBGHelper.Utilities
             }
             context.LesserTrinkets.UpdateRange(lesserTrinkets);
             context.GreaterTrinkets.UpdateRange(greaterTrinkets);
-            
+
             await context.SaveChangesAsync();
 
             await Browser.CloseAsync();
