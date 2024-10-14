@@ -72,11 +72,8 @@
         filteredHeroes = alphabeticalAscending
         ? heroes.OrderBy(x => x.Name).ToList()
         : heroes.OrderByDescending(x => x.Name).ToList();
+   
 
-        if (shouldPaginate == true)
-        {
-            filteredHeroes = filteredHeroes.Take(maxOnLoad).ToList();
-        }
     }
 
     private void SortArmor()
@@ -90,11 +87,6 @@
         filteredHeroes = armorAscending
         ? heroes.OrderBy(x => x.Armor).ToList()
         : heroes.OrderByDescending(x => x.Armor).ToList();
-
-        if (shouldPaginate == true)
-        {
-            filteredHeroes = filteredHeroes.Take(maxOnLoad).ToList();
-        }
     }
 
     private void SortBy()
@@ -107,36 +99,15 @@
         alphabeticalSelected = false;
         armorSelected = false;
 
-        if (shouldPaginate == true)
-        {
-            filteredHeroes = sortByJeef
-            ? tierAscending
-            ? heroes.OrderBy(x => tierOrder.ContainsKey(x.TierJeef) ? tierOrder[x.TierJeef] : int.MaxValue).ToList()
-            : heroes.OrderByDescending(x => tierOrder.ContainsKey(x.TierJeef) ? tierOrder[x.TierJeef] :
-            int.MaxValue).ToList()
-            : tierAscending
-            ? heroes.OrderBy(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] : int.MaxValue).ToList()
-            : heroes.OrderByDescending(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] :
-            int.MaxValue).ToList();
-
-            filteredHeroes = filteredHeroes.Take(maxOnLoad).ToList();
-        }
-        else
-        {
-            filteredHeroes = sortByJeef
-            ? tierAscending
-            ? heroes.OrderBy(x => tierOrder.ContainsKey(x.TierJeef) ? tierOrder[x.TierJeef] : int.MaxValue).ToList()
-            : heroes.OrderByDescending(x => tierOrder.ContainsKey(x.TierJeef) ? tierOrder[x.TierJeef] :
-            int.MaxValue).ToList()
-            : tierAscending
-            ? heroes.OrderBy(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] : int.MaxValue).ToList()
-            : heroes.OrderByDescending(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] :
-            int.MaxValue).ToList();
-        }
-
-
-
-
+        filteredHeroes = sortByJeef
+        ? tierAscending
+        ? heroes.OrderBy(x => tierOrder.ContainsKey(x.TierJeef) ? tierOrder[x.TierJeef] : int.MaxValue).ToList()
+        : heroes.OrderByDescending(x => tierOrder.ContainsKey(x.TierJeef) ? tierOrder[x.TierJeef] :
+        int.MaxValue).ToList()
+        : tierAscending
+        ? heroes.OrderBy(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] : int.MaxValue).ToList()
+        : heroes.OrderByDescending(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] :
+        int.MaxValue).ToList();
     }
     private void SortByHSReplay()
     {
@@ -157,11 +128,6 @@
         ? filteredHeroes.OrderBy(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] : int.MaxValue).ToList()
         : filteredHeroes.OrderByDescending(x => tierOrder.ContainsKey(x.TierHSReplay) ? tierOrder[x.TierHSReplay] :
         int.MaxValue).ToList();
-
-        if (shouldPaginate == true)
-        {
-            filteredHeroes = filteredHeroes.Take(maxOnLoad).ToList();
-        }
     }
     private string GetActiveClass(bool isSelected)
     {
@@ -228,11 +194,10 @@
                 </ul>
             </div>
             <div class="p-4 flex items-center">
-                <label for="modeFilter">Filter by Mode:</label>
-                <select id="modeFilter" @onchange="OnModeChange" class="ml-2">
+                <select id="modeFilter" @onchange="OnModeChange" class="w-full">
                     <option value="Solo">Solo</option>
                     <option value="Duo">Duo</option>
-                    @* <option value="Both">Both</option> *@
+                    <option value="Both">Both</option>
                 </select>
             </div>
         </div>
@@ -257,17 +222,17 @@
                 }
             }
         </ul>
-        @if (shouldPaginate == true)
+        @* @if (shouldPaginate == true)
         {
-            <div class="container mx-auto">
-                <div class="p-4 flex items-center justify-center">
-                    <a class="btn btn-primary mx-auto" @onclick="() => { shouldPaginate=false; SortBy(); }">
-                        <span>Load More</span>
-                        <ArrowDownOutlined />
-                    </a>
-                </div>
-            </div>
-        }
+        <div class="container mx-auto">
+        <div class="p-4 flex items-center justify-center">
+        <a class="btn btn-primary mx-auto" @onclick="() => { shouldPaginate=false; SortBy(); }">
+        <span>Load More</span>
+        <ArrowDownOutlined />
+        </a>
+        </div>
+        </div>
+        } *@
     </div>
 </section>
 

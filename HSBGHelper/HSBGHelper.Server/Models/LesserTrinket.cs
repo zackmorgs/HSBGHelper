@@ -11,5 +11,7 @@ namespace HSBGHelper.Server.Models {
         public string HtmlGuide { get; set; }
         public int Cost { get; set;}
         public char Tier { get; set;}
+        public bool IsInSolos { get; set;}
+        public bool IsInDuos { get; set;}
     }
 }

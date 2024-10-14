@@ -20,23 +20,23 @@
 
     <section class="px-4 text-center">
         <div class="container mx-auto">
-            <div class="flex flex-col md:flex-row justify-between">
-                <div class="flex flex-col">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex flex-col w-full justify-start">
                     <div class="max-w-full">
-                        <input id="search_minion" type="search" class="block w-full mb-4 md:max-w-60 mx-auto"
+                        <input id="search_minion" type="search" class="block w-full mb-4 md:max-w-60  md:w-fit md:mr-4"
                             placeholder="Search" @oninput="HandleSearchInput" />
                     </div>
                 </div>
-                <div class="flex items-center">
-                    <select id="modeFilter" @onchange="OnModeChange" class="w-full mb-4">
+                <div class="flex w-full md:w-fit items-center">
+                    <select id="modeFilter" @onchange="OnModeChange" class="w-full md:w-fit  mb-4  md:mr-4">
                         <option value="Solo">Solo</option>
                         <option value="Duo">Duo</option>
                         <option value="Both">Both</option>
                     </select>
                 </div>
-                <div id="controls" class="flex flex-col md:flex-row">
+                <div id="controls" class="flex flex-col md:flex-row items-center w-full md:w-fit">
 
-                    <select id="types" class="block w-full mb-4 md:mr-4" @onchange="HandleTypesChange">
+                    <select id="types" class="block w-full md:w-fit mb-4 md:mr-4" @onchange="HandleTypesChange">
                         @foreach (var type in types)
                         {
                             <option value="@type">
@@ -115,10 +115,8 @@ else
         }
         else if (mode == "Both")
         {
-            List<Minion> bothModesMinions = new List<Minion>();
-            bothModesMinions.AddRange(dbContext.Minions.Where(m => m.inSoloMode == true).ToList());
-            bothModesMinions.AddRange(dbContext.Minions.Where(m => m.inDuosMode == true).ToList());
-            minions = bothModesMinions;
+            
+            minions = dbContext.Minions.ToList();
         }
         FilterMinions();
     }

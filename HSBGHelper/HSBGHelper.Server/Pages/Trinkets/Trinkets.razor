@@ -1,22 +1,23 @@
-@page "/trinkets";
+@page "/trinkets"
 
-@using HSBGHelper.Server.Data;
-@using HSBGHelper.Server.Models;
-@using HSBGHelper.Server.Services;
-@using HSBGHelper.Client.Components;
-@using AntDesign.Icons;
+@using HSBGHelper.Server.Data
+@using HSBGHelper.Server.Models
+@using HSBGHelper.Server.Services
+@using HSBGHelper.Client.Components
+@using AntDesign.Icons
 
 @rendermode InteractiveServer
 
-@inject GreaterTrinketService greaterTrinketService;
-@inject LesserTrinketService lesserTrinketService;
+@inject GreaterTrinketService greaterTrinketService
+@inject LesserTrinketService lesserTrinketService
 
 @code {
     public List<GreaterTrinket> greaterTrinkets = new List<GreaterTrinket>();
     public List<LesserTrinket> lesserTrinkets = new List<LesserTrinket>();
-
+    public string trinketMode = "Solo";
     public string trinketType = "greater";
     public bool Ascending = true;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadTrinkets();
@@ -26,24 +27,38 @@
     {
         if (trinketType == "greater")
         {
-            if (Ascending)
+            greaterTrinkets = await greaterTrinketService.GetTrinkets();
+
+            if (trinketMode == "Solo")
             {
-                greaterTrinkets = await greaterTrinketService.GetTrinkets();
+                greaterTrinkets = greaterTrinkets.Where(x => x.IsInSolos).ToList();
             }
-            else
+            else if (trinketMode == "Duos")
             {
-                greaterTrinkets = (await greaterTrinketService.GetTrinkets()).OrderByDescending(x => x.Name).ToList();
+                greaterTrinkets = greaterTrinkets.Where(x => x.IsInDuos).ToList();
+            }
+
+            if (!Ascending)
+            {
+                greaterTrinkets = greaterTrinkets.OrderByDescending(x => x.Name).ToList();
             }
         }
         else
         {
-            if (Ascending)
+            lesserTrinkets = await lesserTrinketService.GetTrinkets();
+
+            if (trinketMode == "Solo")
             {
-                lesserTrinkets = await lesserTrinketService.GetTrinkets();
+                lesserTrinkets = lesserTrinkets.Where(x => x.IsInSolos).ToList();
             }
-            else
+            else if (trinketMode == "Duos")
             {
-                lesserTrinkets = (await lesserTrinketService.GetTrinkets()).OrderByDescending(x => x.Name).ToList();
+                lesserTrinkets = lesserTrinkets.Where(x => x.IsInDuos).ToList();
+            }
+
+            if (!Ascending)
+            {
+                lesserTrinkets = lesserTrinkets.OrderByDescending(x => x.Name).ToList();
             }
         }
     }
@@ -54,47 +69,47 @@
         await LoadTrinkets();
     }
 
+    public async Task HandleTrinketModeChange(ChangeEventArgs e)
+    {
+        trinketMode = e.Value.ToString();
+        await LoadTrinkets();
+    }
+
     public async Task HandleTrinketNameSort(ChangeEventArgs e)
     {
-        if (trinketType == "greater")
+        if (e.Value.ToString() == "name_asc")
         {
-            if (e.Value.ToString() == "name_asc")
-            {
-                Ascending = true;
-                greaterTrinkets = greaterTrinkets.OrderBy(x => x.Name).ToList();
-            }
-            else if (e.Value.ToString() == "name_desc")
-            {
-                Ascending = false;
-                greaterTrinkets = greaterTrinkets.OrderByDescending(x => x.Name).ToList();
-            }
-            else if ((e.Value.ToString() == "cost_asc"))
-            {
-                Ascending = true;
-                greaterTrinkets = greaterTrinkets.OrderBy(x => x.Cost).ToList();
-            }
-            else if (e.Value.ToString() == "cost_desc")
-            {
-                Ascending = false;
-                greaterTrinkets = greaterTrinkets.OrderByDescending(x => x.Cost).ToList();
-            } else {
-                Ascending = true;
-                greaterTrinkets = greaterTrinkets.OrderBy(x => x.Name).ToList();
-            }
+            Ascending = true;
         }
-        else
+        else if (e.Value.ToString() == "name_desc")
         {
-            if (e.Value.ToString() == "name_asc")
+            Ascending = false;
+        }
+        else if (e.Value.ToString() == "cost_asc")
+        {
+            Ascending = true;
+            if (trinketType == "greater")
             {
-                Ascending = true;
-                lesserTrinkets = lesserTrinkets.OrderBy(x => x.Name).ToList();
+                greaterTrinkets = greaterTrinkets.OrderBy(x => x.Cost).ToList();
             }
             else
             {
-                Ascending = false;
-                lesserTrinkets = lesserTrinkets.OrderByDescending(x => x.Name).ToList();
+                lesserTrinkets = lesserTrinkets.OrderBy(x => x.Cost).ToList();
             }
         }
+        else if (e.Value.ToString() == "cost_desc")
+        {
+            Ascending = false;
+            if (trinketType == "greater")
+            {
+                greaterTrinkets = greaterTrinkets.OrderByDescending(x => x.Cost).ToList();
+            }
+            else
+            {
+                lesserTrinkets = lesserTrinkets.OrderByDescending(x => x.Cost).ToList();
+            }
+        }
+        await LoadTrinkets();
     }
 }
 
@@ -110,14 +125,17 @@
             <option value="lesser">Lesser Trinkets</option>
         </select>
 
-        <select name="trinket-sort-asc" id="trinket_sort_asc" class="mt-4 md:mt-0 md:ml-4"
-            @onchange="HandleTrinketNameSort">
+        <select name="trinket-mode" id="trinket_mode" class="mt-4 md:mt-0 md:ml-4" @onchange="HandleTrinketModeChange">
+            <option value="Solo">Solo Mode</option>
+            <option value="Duos">Duos Mode</option>
+        </select>
+
+        <select name="trinket-sort-asc" id="trinket_sort_asc" class="mt-4 md:mt-0 md:ml-4" @onchange="HandleTrinketNameSort">
             <option value="name_asc">Sort Name Ascending</option>
             <option value="name_desc">Sort Name Descending</option>
             <option value="cost_asc">Cost Ascending</option>
             <option value="cost_desc">Cost Descending</option>
         </select>
-
     </div>
 </section>
 <section>
@@ -150,7 +168,8 @@
     }
 
     #trinkets_type,
-    #trinket_sort_asc {
+    #trinket_sort_asc,
+    #trinket_mode {
         padding: 0.25rem;
         border-radius: 0.25rem;
     }

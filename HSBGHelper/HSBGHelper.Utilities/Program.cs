@@ -37,17 +37,85 @@ namespace HSBGHelper.Utilities
 
                 var program = new Program();
 
-                await program.ScrapeMinions(context);
-                await program.SetMinionMode(context);
+                try
+                {
+                    await program.ScrapeMinions(context);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("ScrapeMinions failed... " + e.Message);
+                }
 
-                await program.ScrapeAllHeroInformation(context);
-                await program.SetHeroMode(context);
+                try
+                {
+                    await program.SetMinionMode(context);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("SetMinionMode failed... " + e.Message);
+                }
 
-                await program.ScrapeSpells(context);
-                await program.SetSpellMode(context);
+                try
+                {
+                    await program.ScrapeAllHeroInformation(context);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("ScrapeAllHeroInformation failed... " + e.Message);
+                }
+                try
+                {
+                    await program.SetHeroMode(context);
 
-                await program.ScrapeGreaterTrinkets(context);
-                await program.ScrapeLesserTrinkets(context);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("SetHeroMode failed... " + e.Message);
+                }
+                try
+                {
+                    await program.ScrapeSpells(context);
+
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("ScrapeSpells failed... " + e.Message);
+                }
+                try
+                {
+                    await program.SetSpellMode(context);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("SetSpellMode failed... " + e.Message);
+                }
+
+                try
+                {
+                    await program.ScrapeGreaterTrinkets(context);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("ScrapeGreaterTrinkets failed... " + e.Message);
+                }
+
+                try
+                {
+                    await program.ScrapeLesserTrinkets(context);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("ScrapeLesserTrinkets failed... " + e.Message);
+                }
+
+                try
+                {
+                    await program.SetTrinketMode(context);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("SetTrinketMode failed... " + e.Message);
+                }
             }
         }
 
@@ -81,17 +149,17 @@ namespace HSBGHelper.Utilities
             var page = await Browser.NewPageAsync();
 
             // go to the page and wait for the selector to load
-            await page.GoToAsync(path); 
-            
+            await page.GoToAsync(path);
+
             // wait till dom content is loaded
-            await Task.Delay(3000);
+            await Task.Delay(5000);
 
             await page.WaitForSelectorAsync("html");
 
             await page.WaitForSelectorAsync("#MainCardGrid .CardImage");
 
             var minionNodes = await page.QuerySelectorAllAsync("#MainCardGrid .CardImage");
-            
+
 
             foreach (var minionNode in minionNodes)
             {
@@ -185,11 +253,11 @@ namespace HSBGHelper.Utilities
             await using var Browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
 
             var page = await Browser.NewPageAsync();
-            
-            await page.QuerySelectorAllAsync("body");
+
 
             // Get solo mode heroes
             await page.GoToAsync(solosPath);
+            await page.QuerySelectorAllAsync("body");
             await page.WaitForSelectorAsync("img.CardImage");
 
             var soloMinionNodes = await page.QuerySelectorAllAsync("img.CardImage");
@@ -321,6 +389,72 @@ namespace HSBGHelper.Utilities
             context.SaveChanges();
 
         }
+        private async Task SetTrinketMode(HSBGDb context)
+        {
+            string solosGreaterPath = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=trinket&bgGameMode=solos&spellSchool=greater_trinket";
+            string solosLesserPath = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=trinket&bgGameMode=solos&spellSchool=lesser_trinket";
+            string duosGreaterPath = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=trinket&bgGameMode=duos&spellSchool=greater_trinket";
+            string duosLesserPath = "https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=trinket&bgGameMode=duos&spellSchool=lesser_trinket";
+
+            var browserFetcher = new BrowserFetcher();
+            await browserFetcher.DownloadAsync();
+            await using var Browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+
+            var page = await Browser.NewPageAsync();
+
+            // Get solo mode greater trinkets
+            var soloGreaterTrinketNames = await GetTrinketNamesFromPage(page, solosGreaterPath);
+
+            // Get duo mode greater trinkets
+            var duoGreaterTrinketNames = await GetTrinketNamesFromPage(page, duosGreaterPath);
+
+            // Set greater trinket mode info
+            var greaterTrinkets = context.GreaterTrinkets.ToList();
+            foreach (var greaterTrinket in greaterTrinkets)
+            {
+                greaterTrinket.IsInDuos = duoGreaterTrinketNames.Contains(greaterTrinket.Name);
+                greaterTrinket.IsInSolos = soloGreaterTrinketNames.Contains(greaterTrinket.Name);
+                Console.WriteLine($"{greaterTrinket.Name} | Solo: {greaterTrinket.IsInSolos}, Duo: {greaterTrinket.IsInDuos}");
+            }
+
+            // Get solo mode lesser trinkets
+            var soloLesserTrinketNames = await GetTrinketNamesFromPage(page, solosLesserPath);
+
+            // Get duo mode lesser trinkets
+            var duoLesserTrinketNames = await GetTrinketNamesFromPage(page, duosLesserPath);
+
+            // Set lesser trinket mode info
+            var lesserTrinkets = context.LesserTrinkets.ToList();
+            foreach (var lesserTrinket in lesserTrinkets)
+            {
+                lesserTrinket.IsInDuos = duoLesserTrinketNames.Contains(lesserTrinket.Name);
+                lesserTrinket.IsInSolos = soloLesserTrinketNames.Contains(lesserTrinket.Name);
+                Console.WriteLine($"{lesserTrinket.Name} | Solo: {lesserTrinket.IsInSolos}, Duo: {lesserTrinket.IsInDuos}");
+            }
+            context.LesserTrinkets.UpdateRange(lesserTrinkets);
+            context.GreaterTrinkets.UpdateRange(greaterTrinkets);
+            
+            await context.SaveChangesAsync();
+
+            await Browser.CloseAsync();
+        }
+        private async Task<List<string>> GetTrinketNamesFromPage(IPage page, string url)
+        {
+            await page.GoToAsync(url);
+            await page.WaitForSelectorAsync("img.CardImage");
+
+            var trinketNodes = await page.QuerySelectorAllAsync("img.CardImage");
+            var trinketNames = new List<string>();
+
+            foreach (var trinketNode in trinketNodes)
+            {
+                var name = await trinketNode.EvaluateFunctionAsync<string>("e => e.alt");
+                trinketNames.Add(name);
+            }
+
+            return trinketNames;
+        }
+
         private async Task ScrapeSpells(HSBGDb context)
         {
 
@@ -346,7 +480,18 @@ namespace HSBGHelper.Utilities
                     var name = await spellNode.EvaluateFunctionAsync<string>("e => e.alt");
                     var image = await spellNode.EvaluateFunctionAsync<string>("e => e.src");
                     Console.WriteLine("Spell Found: " + name);
-                    spells.Add(new Spell() { Name = name, Image = image, Tier = i, HtmlGuide = "", spellSynergies = new List<Spell>(), minionSynergies = new List<Minion>(), heroSynergies = new List<Hero>(), Mode = "" });
+                    spells.Add(new Spell()
+                    {
+                        Name = name,
+                        Image = image,
+                        Tier = i,
+                        HtmlGuide = "",
+                        spellSynergies = new List<Spell>(),
+                        minionSynergies = new List<Minion>(),
+                        heroSynergies = new List<Hero>(),
+                        isInSoloMode = false,
+                        isInDuosMode = false
+                    });
                 }
             }
 
@@ -401,24 +546,15 @@ namespace HSBGHelper.Utilities
 
             foreach (var spell in spells)
             {
-                if (soloSpellNames.Contains(spell.Name) && duoSpellNames.Contains(spell.Name))
+                if (soloSpellNames.Contains(spell.Name))
                 {
                     Console.WriteLine(spell.Name + " is in both modes");
-                    spell.Mode = "Both";
-                }
-                else if (soloSpellNames.Contains(spell.Name))
-                {
-                    Console.WriteLine(spell.Name + " is in solo mode");
-                    spell.Mode = "Solo";
+                    spell.isInSoloMode = true;
                 }
                 else if (duoSpellNames.Contains(spell.Name))
                 {
-                    Console.WriteLine(spell.Name + " is in duo mode");
-                    spell.Mode = "Duo";
-                }
-                else
-                {
-                    Console.WriteLine(spell.Name + " not found in either mode");
+                    Console.WriteLine(spell.Name + " is in solo mode");
+                    spell.isInDuosMode = true;
                 }
             }
 

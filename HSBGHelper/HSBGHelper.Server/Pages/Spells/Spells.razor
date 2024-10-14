@@ -1,38 +1,40 @@
-@using HSBGHelper.Server.Data;
-@using HSBGHelper.Server.Models;
-@using HSBGHelper.Server.Services;
-@using HSBGHelper.Client.Components;
-@using System.Collections.Generic;
-@using AntDesign.Icons;
+@page "/spells"
+
+@using HSBGHelper.Server.Data
+@using HSBGHelper.Server.Models
+@using HSBGHelper.Server.Services
+@using HSBGHelper.Client.Components
+@using System.Collections.Generic
+@using AntDesign.Icons
 
 @rendermode InteractiveServer
 
-@page "/spells"
-
-@inject SpellService spellService;
+@inject SpellService spellService
 
 <section>
     <header class="hero">
-        <h3 class="text-3xl">Spells (@spells.Count)</h3>
+        <h3 class="text-3xl">Spells (@filteredSpells.Count)</h3>
     </header>
 </section>
 <section>
     <div class="container mx-auto">
-        <div class="flex flex-col md:flex-row item-center justify-between">
-            <div class="flex flex-col p-4">
-                <div class="max-w-full">
-                    <input id="search_spell" type="search" class="block w-full mb-4 md:max-w-60 mx-auto"
+        <div class="flex flex-col md:flex-row item-center justify-start lg:justify-between">
+            <div class="flex flex-col md:flex-row">
+                <div class="max-w-full px-4">
+                    <input id="search_spell" type="search" class="block w-full md:w-fit mb-4 md:max-w-60 mx-auto"
                         placeholder="Search" @oninput="HandleSearchInput" />
                 </div>
-            </div>
-            <div class="flex items-center p-4">
-                    <select id="mode_filter" @onchange="OnModeChange" class="w-full mb-4">
-                        <option value="Solo">Solo</option>
-                        <option value="Duo">Duo</option>
-                        @* <option value="Both">Both</option> *@
-                    </select>
+                <div class="flex flex-col px-4 items-center">
+                    <div class="flex items-center w-full">
+                        <select id="mode_filter" @onchange="OnModeChange" class="w-full md:w-fit mb-4">
+                            <option value="Solo">Solo</option>
+                            <option value="Duos">Duos</option>
+                            <option value="Both">Both</option>
+                        </select>
+                    </div>
                 </div>
-            <div id="controls" class="flex flex-col md:flex-row px-4 justify-center items-center">
+            </div>
+            <div id="controls" class="flex flex-col md:flex-row px-4 justify-end items-center w-full">
                 <ul class="tiers flex flex-row justify-between mb-4">
                     @foreach (var tier in tiers)
                     {
@@ -49,7 +51,7 @@
 <section>
     <div class="container mx-auto">
         <ul class="spells mb-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-            @foreach (Spell spell in filteredSpells)
+            @foreach (var spell in filteredSpells)
             {
                 <SpellCard Name="@spell.Name" Image="@spell.Image" Id="@spell.Id" />
             }
@@ -62,40 +64,50 @@
     private List<Spell> spells = new List<Spell>();
     private List<Spell> filteredSpells = new List<Spell>();
     private List<string> tiers = new List<string>();
-    private bool spellsLoaded = false;
     private string selectedTier = "All";
-    private bool shouldPaginate = true;
-    public string searchQuery { get; set; }
+    private string searchQuery = string.Empty;
     public string Mode { get; set; } = "Solo";
+
     protected override async Task OnInitializedAsync()
     {
-        tiers = new List<String> { "All", "1", "2", "3", "4", "5", "6" };
+        tiers = new List<string> { "All", "1", "2", "3", "4", "5", "6" };
         spells = await spellService.GetSpells();
         filteredSpells = spells;
-        spellsLoaded = true;
-    }
-    public async Task OnModeChange(ChangeEventArgs e)
-    {
-        Mode = e.Value.ToString();
-        await FilterSpells();
-    }
-    // Method to update the search query and filter the minions
-    public async Task HandleSearchInput(ChangeEventArgs e)
-    {
-        searchQuery = e.Value.ToString();
-        await FilterSpells();
-    }
-    public async Task HandleTierClick(string Tier)
-    {
-        selectedTier = Tier;
-        await FilterSpells();
-    }
-    public async Task FilterSpells()
-    {
-        filteredSpells = spells.Where(spell => spell.Name.ToLower().Contains(searchQuery) && (selectedTier == "All" || spell.Tier.ToString() == selectedTier)).ToList();
-        filteredSpells = filteredSpells.Where(spell => spell.Mode == Mode).ToList();
     }
 
+    // Filter the spells based on current filters (search query, mode, and tier)
+    private void FilterSpells()
+    {
+        filteredSpells = spells
+            .Where(spell => spell.Name.ToLower().Contains(searchQuery.ToLower())) // Search query
+            .Where(spell => selectedTier == "All" || spell.Tier.ToString() == selectedTier) // Tier filtering
+            .Where(spell =>
+                (Mode == "Solo" && spell.isInSoloMode) ||
+                (Mode == "Duos" && spell.isInDuosMode) ||
+                (Mode == "Both")) // Mode filtering
+            .ToList();
+    }
+
+    // Handle search input and re-filter spells
+    public void HandleSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value.ToString();
+        FilterSpells();
+    }
+
+    // Handle mode change and re-filter spells
+    public void OnModeChange(ChangeEventArgs e)
+    {
+        Mode = e.Value.ToString();
+        FilterSpells();
+    }
+
+    // Handle tier click and re-filter spells
+    public void HandleTierClick(string tier)
+    {
+        selectedTier = tier;
+        FilterSpells();
+    }
 }
 
 <style>
@@ -117,7 +129,6 @@
         width: 2.5rem;
         height: 2.5rem;
         text-align: center;
-
     }
 
     .tier.selected {
