@@ -1,0 +1,87 @@
+@code {
+    [Parameter]
+    public List<int> LevelingTurns { get; set; }
+    private int currentTavern { get; set; } = 1;
+    public int maxTurns { get; set; } = 7;
+    public int maxTaverns { get; set; } = 6;
+
+    public string GetTavernImage(int turn)
+    {
+        // Simply return the current tavern image based on the level we're at.
+        currentTavern++;
+        string imgPath = "/img/taverns/tavern-" + currentTavern + ".png";
+        return imgPath;
+    }
+}
+<div class="container mx-auto">
+    <div class="p-4">
+        <h2 class="text-2xl text-center">When to Level</h2>
+    </div>
+    <div id="leveling_diagram" class="mx-4 mb-4 md:mx-auto">
+        <ul id="leveling_curve_list">
+            @for (int i = 1; i <= maxTurns; i++)
+            {
+                @if (i == 1)
+                {
+                    <li class="level-turn">
+                        <img class="img-tavern" src="/img/taverns/tavern-1.png" alt="Start on Tavern 1" />
+                        <span class="level-turn-label">
+                            <b>1</b>
+                        </span>
+                    </li>
+                }
+                else
+                {
+                    <li class="level-turn">
+                        @if (LevelingTurns.Contains(i))
+                        {
+                            <img class="img-tavern" src="@GetTavernImage(i)" alt="Level to Tavern @(currentTavern)" />
+                            <!-- Increment the tavern level only here -->
+                        }
+                        <span class="level-turn-label">
+                            <b>@i</b>
+                        </span>
+                    </li>
+                }
+            }
+        </ul>
+    </div>
+</div>
+<style>
+    #leveling_diagram {
+        background: #ffffff7a;
+        border-radius: 0.5rem;
+        box-shadow: inset 0px 0px 1rem #00000047;
+        padding: 0.5rem;
+        max-width:30rem;
+    }
+
+    #leveling_curve_list {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        /* Hardcoded 7 turns for now */
+    }
+
+    .level-turn {
+        padding: 0.5rem;
+        list-style: none;
+        text-align: center;
+        display: block;
+        position: relative;
+        height: 6rem;
+
+    }
+
+    .level-img-tavern {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .level-turn-label {
+        font-size: 1.5rem;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        left: 0;
+    }
+</style>

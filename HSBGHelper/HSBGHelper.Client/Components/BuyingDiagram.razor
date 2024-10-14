@@ -1,0 +1,88 @@
+@code {
+    [Parameter]
+    public List<int> BuyingTurns { get; set; }
+    private int currentTavern { get; set; } = 1;
+    public int maxTurns { get; set; } = 7;
+    public int maxTaverns { get; set; } = 6;
+
+    public string GetTavernImage(int turn)
+    {
+        // Simply return the current tavern image based on the level we're at.
+        currentTavern++;
+        string imgPath = "/img/taverns/tavern-" + currentTavern + ".png";
+        return imgPath;
+    }
+}
+<div class="container mx-auto">
+    <div class="p-4">
+        <h2 class="text-2xl text-center">When to Buy</h2>
+    </div>
+    <div id="buying_diagram" class="mx-4 mb-4 md:mx-auto">
+        <ul id="buying_curve_list">
+            @for (int i = 1; i <= maxTurns; i++)
+            {
+                @if (i == 1)
+                {
+                    <li class="buy-turn">
+                        <img class="img-buy" src="/img/taverns/coin-buy.png" alt="Buy Turn 1" />
+                        <span class="buy-turn-label">
+                            <b>1</b>
+                        </span>
+                    </li>
+                }
+                else
+                {
+                    <li class="buy-turn">
+                        @if (BuyingTurns.Contains(i))
+                        {
+                            <img class="img-buy" src="/img/taverns/coin-buy.png" alt="Buy Minions/Spell" />
+                        }
+                        <span class="buy-turn-label">
+                            <b>@i</b>
+                        </span>
+                    </li>
+                }
+            }
+        </ul>
+    </div>
+</div>
+<style>
+    #buying_diagram {
+        @* margin: 0.5rem; *@
+        background: #ffffff7a;
+        border-radius: 0.5rem;
+        box-shadow: inset 0px 0px 1rem #00000047;
+        padding: 0.5rem;
+        max-width:30rem;
+    }
+
+    #buying_curve_list {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        /* Hardcoded 7 turns for now */
+    }
+
+    .buy-turn {
+        padding: 0.5rem;
+        list-style: none;
+        text-align: center;
+        display: block;
+        position: relative;
+        height: 6rem;
+
+    }
+
+    .img-buy {
+        max-width: 100%;
+        height: auto;
+        border-radius:0.5rem;
+    }
+
+    .buy-turn-label {
+        font-size: 1.5rem;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        left: 0;
+    }
+</style>

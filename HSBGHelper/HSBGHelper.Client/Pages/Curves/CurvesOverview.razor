@@ -1,0 +1,93 @@
+@page "/curves"
+
+@code {
+    public class Curve
+    {
+        public string Name { get; set; }
+        public string Link { get; set; }
+        public string Summary { get; set; }
+    }
+
+private List<Curve> curves = new List<Curve>
+{
+    new Curve { Name = "Basic", Link = "/curves/basic", Summary = "The standard Battlegrounds curve. Level up on turns two and five." },
+    new Curve { Name = "Fast Basic", Link = "/curves/fast-basic", Summary = "A quicker leveling approach. Level up on turns two, five, and six." },
+    new Curve { Name = "Jeef", Link = "/curves/jeef", Summary = "Developed by Jeef, balances early tempo with strong mid-game." },
+    new Curve { Name = "Fast Jeef", Link = "/curves/fast-jeef", Summary = "An aggressive variant of the Jeef curve, focusing on rapid leveling." },
+    new Curve { Name = "Slow Jeef", Link = "/curves/slow-jeef", Summary = "A safer version of Jeef’s curve, slower but offers better board control." },
+    new Curve { Name = "Warrior", Link = "/curves/warrior", Summary = "Focuses on gaining an early advantage by keeping a strong board." },
+    new Curve { Name = "Extended Warrior", Link = "/curves/extended-warrior", Summary = "An extended version of the Warrior curve, delaying leveling for a powerful early board." },
+    new Curve { Name = "Basic Yogg", Link = "/curves/basic-yogg", Summary = "Yogg curve optimizes your early game for Yogg-Saron's hero power." },
+    new Curve { Name = "Aggro Yogg", Link = "/curves/aggro-yogg", Summary = "Aggro variant of Yogg's curve, rushing for early advantage." },
+    new Curve { Name = "Rafaam", Link = "/curves/rafaam", Summary = "Level up early while using Rafaam's hero power to steal powerful minions." },
+    new Curve { Name = "Slow Rafaam", Link = "/curves/slow-rafaam", Summary = "A slower take on Rafaam’s curve to secure more minions from the hero power." },
+    new Curve { Name = "Three on Three (Level on 8th)", Link = "/curves/three-on-three-eight", Summary = "A popular curve where you level to 3 on turn 8 to hit strong tier 3 minions." },
+    new Curve { Name = "Three on Three (Level on 9th)", Link = "/curves/three-on-three-ninth", Summary = "A variant of Three on Three that prioritizes stronger early game economy." },
+    new Curve { Name = "Four on Four", Link = "/curves/four-on-four", Summary = "Level to 4 on turn 9 for a power spike with high-value tier 4 minions." },
+    new Curve { Name = "Toki", Link = "/curves/toki", Summary = "Designed for Toki’s hero power, optimizing minion quality in the early game." },
+    new Curve { Name = "Pocky", Link = "/curves/pocky", Summary = "A curve that balances leveling and board presence, named after the player who popularized it." },
+    // Add more based on the spreadsheet
+};
+
+    protected override async Task OnInitializedAsync()
+    {
+    }
+}
+
+<section>
+    <header class="hero">
+        <h1 class="text-4xl">Curves</h1>
+        <p>A glossary of different popular Battlegrounds curves.</p>
+    </header>
+</section>
+<section>
+    <div class="container mx-auto px-4 py-4">
+        <nav id="curves" class="mx-auto">
+            <ul id="curve_list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                @foreach (var curve in curves)
+                {
+                    <li class="card">
+                        <h2 class="text-2xl">@curve.Name</h2>
+                        <p>@curve.Summary</p>
+                        <br/>
+                        <NavLink href="@curve.Link" class="btn btn-secondary">
+                            <span>Learn More</span>
+                            <RightOutlined />
+                        </NavLink>
+                    </li>
+                }
+            </ul>
+        </nav>
+    </div>
+</section>
+
+<style>
+    .hero p {
+        color:white;
+        margin-top:0.5rem;
+    }
+    #curves {}
+
+    #curve_list {
+        list-style-type: none;
+        padding: 0;
+    }
+    .card {
+        text-align: center;
+        border-radius: 0.5rem;
+        box-shadow: 5px 5px 12px #00000052, inset 1px 1px 5px #00000029;
+        padding: 1rem;
+        margin: 1rem;
+        background-color: #ead5aa;
+    }
+
+    .card h2 {
+        margin: -1rem -1rem 0.5rem -1rem;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        background: #ffffffcf;
+        border-top-right-radius: 0.5rem;
+        border-top-left-radius: 0.5rem;
+        color:#830e0e;
+    }
+</style>
