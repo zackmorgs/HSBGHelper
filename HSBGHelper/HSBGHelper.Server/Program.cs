@@ -38,7 +38,7 @@ builder.Services.AddScoped<GreaterTrinketService>();
 builder.Services.AddDbContext<HSBGDb>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddLettuceEncrypt();
+
 
 builder.Services.AddIdentity<User, IdentityRole<int>>()
     .AddEntityFrameworkStores<HSBGDb>()
@@ -53,10 +53,13 @@ builder.Services.AddAntiforgery(options =>
 builder.Services.AddScoped<AuthProvider>();
 builder.Services.AddScoped<SignInManager<User>>();
 builder.Services.AddScoped<UserManager<User>>();
+builder.Services.AddScoped<RoleManager<IdentityRole<int>>>();
 
+builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddBlazoredSessionStorage();
 
+builder.Services.AddLettuceEncrypt();
 
 var app = builder.Build();
 

@@ -2,23 +2,25 @@
 
 @rendermode InteractiveServer
 
-@using System.ComponentModel.DataAnnotations;
 @using HSBGHelper.Server.Models;
-@using Microsoft.AspNetCore.Components.Authorization;
 @using HSBGHelper.Server.Services;
+@using System.ComponentModel.DataAnnotations;
+@using Microsoft.AspNetCore.Authentication;
 @using Microsoft.AspNetCore.Identity;
 @using AntDesign.Icons;
+@using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity
 
 
 @inject AuthProvider AuthStateProvider;
 @inject NavigationManager NavigationManager;
 @inject UserManager<User> _userManager;
 @inject SignInManager<User> _signInManager;
-@inject ILogger<Admin> Logger
+@inject ILogger<Admin> Logger;
+@inject IdentityRedirectManager RedirectManager;
 
 @code {
 
-    [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; }
+    @* [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; } *@
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -43,7 +45,7 @@
     {
         try
         {
-            var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure:
+            var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure:
             false);
             if (result.Succeeded)
             {
