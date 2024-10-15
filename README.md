@@ -21,9 +21,12 @@ A Blazor app that helps Hearthstone: Battlegrounds players make intelligent deci
 
 
 ## Note:
-In development for the newest season of Battlegrounds. (Trinket meta)
+- In development for the newest season of Battlegrounds. (Trinket meta)
+
 
 ## How to run:
+- Set and environment varible named "ADMIN_PASSWORD"
+    - using Powershell: `$env:ADMIN_PASSWORD = "your_password"`
 - Clone this repository and open the directory in powershell.
 - `cd "./HSBGHelper/HSBGHelper.Utilities"`
 - `dotnet restore`

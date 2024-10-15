@@ -5,6 +5,7 @@ using HSBGHelper.Server.Services;
 using HSBGHelper.Server.Models;
 using Microsoft.AspNetCore.Identity;
 using Blazored.SessionStorage;
+using Microsoft.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,7 @@ builder.Services
     .AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
     
 // Register Services
 builder.Services.AddScoped<MinionService>();
@@ -38,11 +40,23 @@ builder.Services.AddDbContext<HSBGDb>(options =>
 
 builder.Services.AddLettuceEncrypt();
 
-builder.Services.AddIdentity<UserAccount, IdentityRole<int>>()
+builder.Services.AddIdentity<User, IdentityRole<int>>()
     .AddEntityFrameworkStores<HSBGDb>()
     .AddDefaultTokenProviders();
 
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-CSRF-TOKEN";
+});
+
+
+builder.Services.AddScoped<AuthProvider>();
+builder.Services.AddScoped<SignInManager<User>>();
+builder.Services.AddScoped<UserManager<User>>();
+
+
 builder.Services.AddBlazoredSessionStorage();
+
 
 var app = builder.Build();
 

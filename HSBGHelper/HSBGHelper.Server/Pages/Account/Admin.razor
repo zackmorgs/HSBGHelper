@@ -1,15 +1,55 @@
 @page "/admin/"
 
+@rendermode InteractiveServer
+
 @using HSBGHelper.Server.Models;
+@using Microsoft.AspNetCore.Components.Authorization;
+@using HSBGHelper.Server.Services;
+@using Microsoft.AspNetCore.Identity;
 @using AntDesign.Icons;
 
-@rendermode InteractiveWebAssembly
 
-@inject AuthProvider AuthStateProvider
-@inject NavigationManager NavigationManager
+@inject AuthProvider AuthStateProvider;
+@inject NavigationManager NavigationManager;
+@inject UserManager<User> _userManager;
+@inject SignInManager<User> _signInManager;
 
 @code {
 
+    [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    public string userName { get; set; } = "";
+    public string Password { get; set; } = "";
+    private string loginErrorMessage { get; set; } = "";
+
+    public async Task LoginUser()
+    {
+        try
+        {
+            var user = await _userManager.FindByNameAsync(userName);
+
+            if (user == null)
+            {
+                loginErrorMessage = "User not found.";
+                return;
+            }
+
+            var result = await _signInManager.CheckPasswordSignInAsync(user, Password, false);
+            if (result.Succeeded)
+            {
+                NavigationManager.NavigateTo("/admin/");
+            }
+            else
+            {
+                loginErrorMessage = "Invalid username or password.";
+            }
+        }
+        catch (Exception ex)
+        {
+            loginErrorMessage = $"An error occurred: {ex.Message}";
+            Console.WriteLine(ex.ToString());
+        }
+    }
 }
 
 <section>
@@ -18,37 +58,70 @@
     </header>
 </section>
 
-<section>
-    <div class="container mx-auto">
-        <h2>Login</h2>
-        <input class="w-full" type="text" id="user_name" placeholder="Username" />
-        <input type="password" id="password" class="w-full" />
-    </div>
-</section>
+<CascadingAuthenticationState>
+    <AuthorizeView>
+        <NotAuthorized>
+            <section>
+                <div class="container mx-auto max-w-96 mb-8">
+                    <div class="p-4">
+                        <h2 class="text-2xl mb-2">Login</h2>
+                        <input class="w-full" type="text" id="user_name" placeholder="Username" @bind="userName" />
+                        <input type="password" id="password" class="w-full" @bind="Password" />
+                        <a class="btn btn-primary" @onclick="LoginUser">
+                            <span>Login</span>
+                            <RightOutlined />
+                        </a>
+                        @if (loginErrorMessage != "")
+                        {
+                            <p class="text-red-500 mt-2">@loginErrorMessage</p>
+                        }
+                    </div>
+                </div>
+            </section>
+        </NotAuthorized>
+        <Authorized>
+            <section>
+                <nav class="container mx-auto max-w-96">
+                    <ul class="p-4 grid grid-cols-1 md:grid-cols-2">
+                        <li>
+                            <a class="btn btn-secondary mb-4" href="/admin/edit-heroes">
+                                <span>Edit Heroes</span>
+                                <RightOutlined />
+                            </a>
+                        </li>
+                        <li>
+                            <a class="btn btn-secondary mb-4" href="/admin/edit-trinkets">
+                                <span>Edit Trinkets</span>
+                                <RightOutlined />
+                            </a>
+                        </li>
+                        <li>
+                            <a class="btn btn-secondary mb-4" href="/admin/edit-minions">
+                                <span>Edit Minions</span>
+                                <RightOutlined />
+                            </a>
+                        </li>
+                        <li>
+                            <a class="btn btn-secondary mb-4" href="/admin/edit-spells">
+                                <span>Edit Spells</span>
+                                <RightOutlined />
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </section>
 
-<section>
-    <nav class="container mx-auto">
-        <ul class="p-4 grid grid-cols-1 md:grid-cols-2">
-            <li>
-                <a class="btn btn-secondary mb-4" href="/admin/edit-heroes">
-                    <span>Edit Heroes</span> <RightOutlined />
-                </a>
-            </li>
-            <li>
-                <a class="btn btn-secondary mb-4" href="/admin/edit-trinkets">
-                    <span>Edit Trinkets</span> <RightOutlined />
-                </a>
-            </li>
-            <li>
-                <a class="btn btn-secondary mb-4" href="/admin/edit-minions">
-                    <span>Edit Minions</span> <RightOutlined />
-                </a>
-            </li>
-            <li>
-                <a class="btn btn-secondary mb-4" href="/admin/edit-spells">
-                    <span>Edit Spells</span> <RightOutlined />
-                </a>
-            </li>
-        </ul>
-    </nav>
-</section>
+        </Authorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
+
+
+
+<style>
+    #user_name,
+    #password {
+        border-radius: 0.25rem;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+</style>

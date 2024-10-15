@@ -15,6 +15,8 @@ namespace HSBGHelper.Utilities
     {
         public Program()
         {
+            Console.WriteLine("HSBGHelper.Utilities");
+            Console.WriteLine("Starting Program");
         }
 
         public static async Task Main(string[] args)
@@ -33,23 +35,101 @@ namespace HSBGHelper.Utilities
                 context.Minions.RemoveRange(context.Minions);
                 // context.Buddies.RemoveRange(context.Buddies);
                 context.Spells.RemoveRange(context.Spells);
-                context.SaveChanges();
+                context.Users.RemoveRange(context.Users);
 
                 var program = new Program();
 
+                string input = "";
 
-                await program.ScrapeMinions(context);
-                await program.SetMinionMode(context);
-                await program.ScrapeAllHeroInformation(context);
-                await program.SetHeroMode(context);
-                await program.ScrapeSpells(context);
-                await program.SetSpellMode(context);
-                await program.ScrapeGreaterTrinkets(context);
-                await program.ScrapeLesserTrinkets(context);
-                await program.SetTrinketMode(context);
+                Console.WriteLine("Emtpy and Rebuild/Scrape Database? (y/n)");
+                input = Console.ReadLine();
 
+                if (input.ToUpper() == "Y")
+                {
+                    context.Users.Add(new User()
+                    {
+                        Name = "admin",
+                        Email = "zackmorgenthaler@gmail.com",
+                        Password = "Ibanez_RG550"
+                    });
+
+                    context.SaveChanges();
+                    await program.ScrapeAllHeroInformation(context);
+                    await program.SetHeroMode(context);
+                    await program.ScrapeMinions(context);
+                    await program.SetMinionMode(context);
+                    await program.ScrapeSpells(context);
+                    await program.SetSpellMode(context);
+                    await program.ScrapeGreaterTrinkets(context);
+                    await program.ScrapeLesserTrinkets(context);
+                    await program.SetTrinketMode(context);
+                }
+                else
+                {
+                    Console.WriteLine("Add admin account?");
+                    Console.WriteLine("Y/N");
+                    input = Console.ReadLine();
+
+                    if (input.ToUpper() == "Y")
+                    {
+                        context.Users.Add(new User()
+                        {
+                            Name = "admin",
+                            Email = "zackmorgenthaler@gmail.com",
+                            Password = "Ibanez_RG550"
+                        });
+
+                        context.SaveChanges();
+                    }
+
+                    Console.WriteLine("Scraping all minion information?");
+                    Console.WriteLine("Y/N");
+
+                    input = Console.ReadLine();
+
+                    if (input.ToUpper() == "Y")
+                    {
+                        await program.ScrapeMinions(context);
+                        await program.SetMinionMode(context);
+                    }
+
+                    Console.WriteLine("Scraping all hero information?");
+                    Console.WriteLine("Y/N");
+
+                    input = Console.ReadLine();
+
+                    if (input.ToUpper() == "Y")
+                    {
+                        await program.ScrapeAllHeroInformation(context);
+                        await program.SetHeroMode(context);
+                    }
+
+                    Console.WriteLine("Scraping all spell information?");
+                    Console.WriteLine("Y/N");
+
+                    input = Console.ReadLine();
+
+                    if (input.ToUpper() == "Y")
+                    {
+                        await program.ScrapeSpells(context);
+                        await program.SetSpellMode(context);
+                    }
+
+                    Console.WriteLine("Scraping all trinket information?");
+                    Console.WriteLine("Y/N");
+
+                    input = Console.ReadLine();
+
+                    if (input.ToUpper() == "Y")
+                    {
+                        await program.ScrapeGreaterTrinkets(context);
+                        await program.ScrapeLesserTrinkets(context);
+                        await program.SetTrinketMode(context);
+                    }
+                }
             }
         }
+
 
         public async Task ScrapeMinions(HSBGDb context)
         {
@@ -100,7 +180,7 @@ namespace HSBGHelper.Utilities
 
 
                 minionNode.ClickAsync().Wait();
-
+                await Task.Delay(500);
                 // wait a second to avoid rate limiting
 
                 await page.WaitForSelectorAsync("[class*=CardDetailsLayout__CardFlavorText]");

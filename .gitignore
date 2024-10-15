@@ -1,15 +1,11 @@
 # /HSBGHelper/HSBGHelper.Server/Migrations
 
-# /HSBGHelper/HSBGHelper.Server/Pages/Account/Login.razor
-
 /.vs
 /HSBGHelper/HSBGHelper.Client/bin
 /HSBGHelper/HSBGHelper.Client/obj
 /HSBGHelper/HSBGHelper.Server/bin
 /HSBGHelper/HSBGHelper.Server/obj
 
-# account stuff
-# /HSBGHelper/HSBGHelper.Server/Pages/Account/
 
 /HSBGHelper/HSBGHelper.Server/HSBGHelper.Server.csproj.user
 /HSBGHelper/HSBGHelper.Client/HSBGHelper.Client.csproj.user

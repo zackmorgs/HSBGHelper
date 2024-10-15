@@ -9,11 +9,11 @@ namespace HSBGHelper.Server.Models
 
     public class AuthProvider : AuthenticationStateProvider
     {
-        private readonly UserManager<UserAccount> _userManager;
+        private readonly UserManager<User> _userManager;
         private readonly ISessionStorageService _sessionStorageService;
 
         public AuthProvider(
-            UserManager<UserAccount> userManager,
+            UserManager<User> userManager,
             ISessionStorageService sessionStorageService
         )
         {
@@ -36,7 +36,7 @@ namespace HSBGHelper.Server.Models
                 if (user is not null)
                 {
                     identity = new ClaimsIdentity(new[]
-                    { new Claim("UserAccountId", user.Id.ToString()), new Claim(ClaimTypes.Email, user.Email ?? ""), new Claim(ClaimTypes.Name, user.Username) }, "CardOrgAuth");
+                    { new Claim("UserAccountId", user.Id.ToString()), new Claim(ClaimTypes.Email, user.Email ?? ""), new Claim(ClaimTypes.Name, user.Name) }, "CardOrgAuth");
                 }
                 else
                 {
