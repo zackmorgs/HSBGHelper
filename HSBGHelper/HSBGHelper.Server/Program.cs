@@ -6,12 +6,13 @@ using HSBGHelper.Server.Models;
 using Microsoft.AspNetCore.Identity;
 using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.ConfigureKestrel(kestrel =>
 {
-    kestrel.ListenAnyIP(443, portOptions =>
+    kestrel.ListenAnyIP(443, (portOptions) =>
     {
         portOptions.UseHttps(h =>
         {
@@ -38,8 +39,6 @@ builder.Services.AddScoped<GreaterTrinketService>();
 builder.Services.AddDbContext<HSBGDb>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
-
 builder.Services.AddIdentity<User, IdentityRole<int>>()
     .AddEntityFrameworkStores<HSBGDb>()
     .AddDefaultTokenProviders();
@@ -54,6 +53,7 @@ builder.Services.AddScoped<AuthProvider>();
 builder.Services.AddScoped<SignInManager<User>>();
 builder.Services.AddScoped<UserManager<User>>();
 builder.Services.AddScoped<RoleManager<IdentityRole<int>>>();
+builder.Services.AddScoped<IdentityRedirectManager>();
 
 builder.Services.AddCascadingAuthenticationState();
 

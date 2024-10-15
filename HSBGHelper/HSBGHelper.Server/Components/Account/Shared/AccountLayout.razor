@@ -1,6 +1,7 @@
-@inherits LayoutComponentBase
-@layout HSBGHelper.Server.Components.Account.Shared.AccountLayout
-@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Components;
+@inherits LayoutComponentBase;
+@layout HSBGHelper.Server.Components.Account.Shared.AccountLayout;
+@inject NavigationManager NavigationManager;
 
 @if (HttpContext is null)
 {
@@ -9,6 +10,8 @@
 else
 {
     @Body
+    <script src="_framework/blazor.web.js" defer></script>
+
 }
 
 @code {

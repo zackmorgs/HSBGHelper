@@ -36,7 +36,7 @@ namespace HSBGHelper.Server.Models
                 if (user is not null)
                 {
                     identity = new ClaimsIdentity(new[]
-                    { new Claim("UserAccountId", user.Id.ToString()), new Claim(ClaimTypes.Email, user.Email ?? ""), new Claim(ClaimTypes.Name, user.Name) }, "CardOrgAuth");
+                    { new Claim("UserAccountId", user.Id.ToString()), new Claim(ClaimTypes.Email, user.Email ?? ""), new Claim(ClaimTypes.Email, user.Email) }, "CardOrgAuth");
                 }
                 else
                 {
