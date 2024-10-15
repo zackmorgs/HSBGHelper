@@ -2,6 +2,7 @@
 
 @rendermode InteractiveServer
 
+@using System.ComponentModel.DataAnnotations;
 @using HSBGHelper.Server.Models;
 @using Microsoft.AspNetCore.Components.Authorization;
 @using HSBGHelper.Server.Services;
@@ -13,35 +14,56 @@
 @inject NavigationManager NavigationManager;
 @inject UserManager<User> _userManager;
 @inject SignInManager<User> _signInManager;
+@inject ILogger<Admin> Logger
 
 @code {
 
     [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; }
 
-    public string userName { get; set; } = "";
-    public string Password { get; set; } = "";
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private InputModel Input { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
     private string loginErrorMessage { get; set; } = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpMethods.IsGet(HttpContext.Request.Method))
+        {
+            // Clear the existing external cookie to ensure a clean login process
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+        }
+    }
+
 
     public async Task LoginUser()
     {
         try
         {
-            var user = await _userManager.FindByNameAsync(userName);
-
-            if (user == null)
-            {
-                loginErrorMessage = "User not found.";
-                return;
-            }
-
-            var result = await _signInManager.CheckPasswordSignInAsync(user, Password, false);
+            var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure:
+            false);
             if (result.Succeeded)
             {
-                NavigationManager.NavigateTo("/admin/");
+                Logger.LogInformation("User logged in.");
+                RedirectManager.RedirectTo(ReturnUrl);
+            }
+            else if (result.RequiresTwoFactor)
+            {
+                RedirectManager.RedirectTo(
+                "Account/LoginWith2fa",
+                new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
+            }
+            else if (result.IsLockedOut)
+            {
+                Logger.LogWarning("User account locked out.");
+                RedirectManager.RedirectTo("Account/Lockout");
             }
             else
             {
-                loginErrorMessage = "Invalid username or password.";
+                errorMessage = "Error: Invalid login attempt.";
             }
         }
         catch (Exception ex)
@@ -49,6 +71,20 @@
             loginErrorMessage = $"An error occurred: {ex.Message}";
             Console.WriteLine(ex.ToString());
         }
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = "";
+
+        [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; } = "";
+
+        [Display(Name = "Remember me?")]
+        public bool RememberMe { get; set; }
     }
 }
 
@@ -63,19 +99,22 @@
         <NotAuthorized>
             <section>
                 <div class="container mx-auto max-w-96 mb-8">
-                    <div class="p-4">
+                    <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login" class="p-4">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="text-red-500" role="alert" />
                         <h2 class="text-2xl mb-2">Login</h2>
-                        <input class="w-full" type="text" id="user_name" placeholder="Username" @bind="userName" />
-                        <input type="password" id="password" class="w-full" @bind="Password" />
+                        <InputText @bind-Value="Input.Email" autocomplete="Email" aria-required="true"
+                            placeholder="name@example.com" />
+                        <ValidationMessage For="() => Input.Email" class="text-red-500 mt-1" />
+                        <InputText id="password" type="password" @bind-Value="Input.Password"
+                            autocomplete="current-password" aria-required="true" placeholder="password"
+                            class="w-full" />
+                        <InputCheckbox @bind-Value="Input.RememberMe" />
                         <a class="btn btn-primary" @onclick="LoginUser">
                             <span>Login</span>
                             <RightOutlined />
                         </a>
-                        @if (loginErrorMessage != "")
-                        {
-                            <p class="text-red-500 mt-2">@loginErrorMessage</p>
-                        }
-                    </div>
+                    </EditForm>
                 </div>
             </section>
         </NotAuthorized>
@@ -118,7 +157,7 @@
 
 
 <style>
-    #user_name,
+    #email,
     #password {
         border-radius: 0.25rem;
         padding: 0.5rem;
