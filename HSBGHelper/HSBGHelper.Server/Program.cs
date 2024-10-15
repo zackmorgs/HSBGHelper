@@ -2,6 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using HSBGHelper.Server.Components;
 using HSBGHelper.Server.Data;
 using HSBGHelper.Server.Services;
+using HSBGHelper.Server.Models;
+using Microsoft.AspNetCore.Identity;
+using Blazored.SessionStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +37,12 @@ builder.Services.AddDbContext<HSBGDb>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddLettuceEncrypt();
+
+builder.Services.AddIdentity<UserAccount, IdentityRole<int>>()
+    .AddEntityFrameworkStores<HSBGDb>()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddBlazoredSessionStorage();
 
 var app = builder.Build();
 

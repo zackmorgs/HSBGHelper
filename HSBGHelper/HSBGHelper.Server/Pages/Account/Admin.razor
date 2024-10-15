@@ -1,11 +1,15 @@
 @page "/admin/"
 
+@using HSBGHelper.Server.Models;
 @using AntDesign.Icons;
 
 @rendermode InteractiveWebAssembly
 
+@inject AuthProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+
 @code {
-    private bool hasAdministrator = false;
+
 }
 
 <section>
@@ -13,6 +17,15 @@
         <h2 class="text-3xl">Admin</h2>
     </header>
 </section>
+
+<section>
+    <div class="container mx-auto">
+        <h2>Login</h2>
+        <input class="w-full" type="text" id="user_name" placeholder="Username" />
+        <input type="password" id="password" class="w-full" />
+    </div>
+</section>
+
 <section>
     <nav class="container mx-auto">
         <ul class="p-4 grid grid-cols-1 md:grid-cols-2">
