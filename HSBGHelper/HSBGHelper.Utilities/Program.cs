@@ -50,7 +50,7 @@ namespace HSBGHelper.Utilities
                     {
                         Name = "admin",
                         Email = "zackmorgenthaler@gmail.com",
-                        Password = "Ibanez_RG550"
+                        Password = "Password_1234"
                     });
 
                     context.SaveChanges();
@@ -164,12 +164,12 @@ namespace HSBGHelper.Utilities
             await page.GoToAsync(path);
 
             // wait till dom content is loaded
+            
+
+            await page.WaitForSelectorAsync("body");
             await Task.Delay(5000);
-
-            await page.WaitForSelectorAsync("html");
-
+            
             await page.WaitForSelectorAsync("#MainCardGrid .CardImage");
-
             var minionNodes = await page.QuerySelectorAllAsync("#MainCardGrid .CardImage");
 
 
@@ -178,15 +178,14 @@ namespace HSBGHelper.Utilities
                 var name = await minionNode.EvaluateFunctionAsync<string>("e => e.alt");
                 var image = await minionNode.EvaluateFunctionAsync<string>("e => e.src");
 
-
                 minionNode.ClickAsync().Wait();
                 await Task.Delay(500);
-                // wait a second to avoid rate limiting
-
+                // wait a second to avoid whatever the fuck is happening 
+                
                 await page.WaitForSelectorAsync("[class*=CardDetailsLayout__CardFlavorText]");
 
                 var descriptionNode = await page.QuerySelectorAsync("[class*=CardDetailsLayout__CardFlavorText]");
-                var description = await descriptionNode.EvaluateFunctionAsync<string>("e => e.innerText");
+                var description = await descriptionNode.EvaluateFunctionAsync<string>("e => e.innerHTML");
 
                 var keywords = new List<string>();
                 try
@@ -201,6 +200,7 @@ namespace HSBGHelper.Utilities
                 }
                 catch (Exception e)
                 {
+                    Console.WriteLine("Exception found: " + e.ToString());
                     Console.WriteLine("No keywords found");
                 }
 
@@ -208,7 +208,8 @@ namespace HSBGHelper.Utilities
 
                 try
                 {
-                    // await page.WaitForSelectorAsync(".DPOYe li:nth-child(3) .value");
+                    // find type via .value selector
+                    await page.WaitForSelectorAsync(".DPOYe li:nth-child(3) .value");
                     var typeNode = await page.QuerySelectorAsync(".DPOYe li:nth-child(3) .value");
 
                     type = await typeNode.EvaluateFunctionAsync<string>("e => e.innerText");
@@ -216,7 +217,6 @@ namespace HSBGHelper.Utilities
                 catch (Exception e)
                 {
                     Console.WriteLine("No type found - labeled Neutral");
-
                 }
 
 
@@ -241,8 +241,8 @@ namespace HSBGHelper.Utilities
 
 
                 // close the modal
-                await page.WaitForSelectorAsync("[class*=Modal__ModalContent] a:first-child");
-                await page.ClickAsync("[class*=Modal__ModalContent] a:first-child");
+                await page.WaitForSelectorAsync("[class*=Modal__ModalContent] [class*=CloseButton]");
+                await page.ClickAsync("[class*=Modal__ModalContent] [class*=CloseButton]");
             }
 
 
@@ -269,7 +269,8 @@ namespace HSBGHelper.Utilities
 
             // Get solo mode heroes
             await page.GoToAsync(solosPath);
-            await page.QuerySelectorAllAsync("body");
+            await page.WaitForSelectorAsync("body");
+
             await page.WaitForSelectorAsync("img.CardImage");
 
             var soloMinionNodes = await page.QuerySelectorAllAsync("img.CardImage");
@@ -283,8 +284,7 @@ namespace HSBGHelper.Utilities
             // Get duo mode heroes
             await page.GoToAsync(duosPath);
 
-            await page.QuerySelectorAllAsync("body");
-
+            await page.WaitForSelectorAsync("body");
             await page.WaitForSelectorAsync("img.CardImage");
 
             var duoMinionNodes = await page.QuerySelectorAllAsync("img.CardImage");
@@ -568,8 +568,6 @@ namespace HSBGHelper.Utilities
                     spell.isInDuosMode = true;
                 }
             }
-
-
         }
         public async Task ScrapeAllHeroInformation(HSBGDb context)
         {
