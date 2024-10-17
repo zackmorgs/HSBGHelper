@@ -1,7 +1,9 @@
 @page "/admin/"
+@inherits ComponentBase
+
 @* @attribute [Authorize] *@
 
-@rendermode InteractiveAuto
+@rendermode InteractiveServer
 
 @using HSBGHelper.Server.Models;
 @using HSBGHelper.Server.Services;
@@ -33,13 +35,17 @@
         [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }
     }
-    
+
     @* [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; } *@
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    private InputModel Input { get; set; } = new();
+    private InputModel Input { get; set; } = new(){
+        Email = "",
+        Password = "",
+        RememberMe = false
+    };
 
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; } = "/admin";
@@ -60,11 +66,13 @@
             false);
             if (result.Succeeded)
             {
+                Console.WriteLine("Success");
                 Logger.LogInformation("User logged in.");
                 NavigationManager.NavigateTo(ReturnUrl ?? "/admin");
             }
             else
             {
+                Console.WriteLine("Failure");
                 loginErrorMessage = "Error: Invalid login attempt.";
             }
         }
@@ -90,27 +98,21 @@
         <NotAuthorized>
             <section id="login">
                 <div class="container mx-auto max-w-96 mb-8">
-                    <EditForm Context="Login" Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login"
-                        class="p-4">
+                    <EditForm Model="Input" OnValidSubmit="LoginUser" class="p-4" Context="login">
                         <DataAnnotationsValidator />
-                        <ValidationSummary class="text-red-500" role="alert" />
-                        <h2 class="text-2xl mb-2">Login</h2>
-                        <InputText id="email" @bind-Value="Input.Email" autocomplete="Email" aria-required="true"
-                            placeholder="name@example.com" class="w-full mb-4" />
-                        <ValidationMessage For="() => Input.Email" class="text-red-500 mt-1" />
-                        <InputText id="password" type="password" @bind-Value="Input.Password"
-                            autocomplete="current-password" aria-required="true" placeholder="password"
-                            class="w-full" />
+                        <ValidationSummary class="text-red-500" />
 
-                        <label for="remember_me">
-                            <span>Remember me?</span>
-                            <InputCheckbox id="remember_me" @bind-Value="Input.RememberMe" />
-                        </label>
-                        <hr class="mt-4 mb-4" />
-                        <button type="submit" class="btn btn-primary block">
-                            <span>Login</span>
-                            <RightOutlined />
-                        </button>
+                        <InputText id="email" @bind-Value="Input.Email" placeholder="name@example.com"
+                            class="w-full" />
+                        <ValidationMessage For="() => Input.Email" class="text-red-500" />
+
+                        <InputText id="password" type="password" @bind-Value="Input.Password" placeholder="password"
+                            class="w-full" />
+                        <ValidationMessage For="() => Input.Password" class="text-red-500" />
+                        <br/>
+                        <InputCheckbox @bind-Value="Input.RememberMe" /> Remember me
+
+                        <button type="submit" class="btn btn-primary">Login</button>
                     </EditForm>
                 </div>
             </section>
@@ -160,7 +162,7 @@
         padding: 0.5rem;
         margin-bottom: 0.5rem;
     }
-</style>    
+</style>
 
 
 <style>
