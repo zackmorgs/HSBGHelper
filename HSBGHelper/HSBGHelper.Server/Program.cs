@@ -57,11 +57,11 @@ builder.Services.AddScoped<IdentityRedirectManager>();
 
 builder.Services.AddCascadingAuthenticationState();
 
-builder.Services.AddAuthentication()
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/admin/";
-    });
+// builder.Services.AddAuthentication()
+//     .AddCookie(options =>
+//     {
+//         options.LoginPath = "/admin/";
+//     });
 
 builder.Services.AddLettuceEncrypt();
 
