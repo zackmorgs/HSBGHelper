@@ -248,10 +248,10 @@ h5 {
   border: 2px solid white;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
 }
-
+/* 
 hr {
   border-bottom: 1px solid black;
-}
+} */
 #home-links-list p {
   margin: 1rem 0rem 0.25rem;
 }

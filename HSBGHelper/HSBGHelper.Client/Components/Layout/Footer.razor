@@ -3,22 +3,99 @@
 @rendermode InteractiveWebAssembly
 
 <footer>
-    <nav class="container mx-auto px-4">
-        <p>2024 HSBGHelper ©</p>
-        <ul id="footer-items">
-            <li>
-                <a href="https://discord.com/invite/hDyfWExxzz">
-                    JeefHS's Discord
-                </a>
-            </li>
-            <li>
-                <a href="https://www.youtube.com/%40JeefHS">
-                    JeefHS's YouTube
-                </a>
-            </li>
-        </ul>
-        <a href="/privacy-policy">
-            Privacy Policy
-        </a>
+    <nav id="footer_nav" class="container mx-auto px-4">
+        <div class="grid grid-col md:grid-cols-3 gap-4">
+            <div id="hsbg_links" class="footer-item mb-4 md:mr-4 w-full">
+                <h3 accesskey="" class="text-xl">HSBG Resources</h3>
+                <ul id="footer-hsbg">
+                    <li>
+                        <a href="About">
+                            About
+                        </a>
+                    </li>
+                    <li>
+                        <a href="About">
+                            Contact
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://discord.gg/kNGCWpU2Wm">
+                            HSBG Discord
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div id="dog_links" class="footer-item mb-4 md:mr-4 w-full">
+                <h3 class="text-xl">
+                    Dog's Resources
+                </h3>
+                <ul id="footer-dog">
+                    <li>
+                        <a href="https://www.twitch.tv/dogdog">
+                            dogdog's Twitch
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.youtube.com/@@dogdogtwitch">
+                            dogdog's YouTube
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+            <div id="jeef_links" class="footer-item mb-4 w-full">
+                <h3 class="text-xl">
+                    Jeef's Resources
+                </h3>
+                <ul id="footer-jeef">
+                    <li>
+                        <a href="https://www.twitch.tv/jeefhs">
+                            JeefHS's Twitch
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://discord.com/invite/hDyfWExxzz">
+                            JeefHS's Discord
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.youtube.com/%40JeefHS">
+                            JeefHS's YouTube
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="flex flex-row justify-between items-center md:flex-col md:justify-start">
+            <p>2024 HSBGHelper ©</p>
+            <a href="/privacy-policy">
+                Privacy Policy
+            </a>
+        </div>
     </nav>
 </footer>
+
+<style>
+    .footer-item {
+        padding: 0rem 1rem 1rem;
+        border-radius: 0.5rem;
+        background-color: #f3f4f6;
+
+        box-shadow: 5px 5px 12px #00000052, inset 1px 1px 5px #00000029;
+        background-color: #ead5aa;
+    }
+
+    .footer-item h3 {
+        background-color: #830e0e;
+        border-top-right-radius: 0.5rem;
+        border-top-left-radius: 0.5rem;
+        padding: 1rem 1rem 0.5rem;
+        margin-left: -1rem;
+        margin-right: -1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .footer-item a {
+        color: black;
+    }
+</style>
