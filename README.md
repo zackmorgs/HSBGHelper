@@ -25,24 +25,27 @@ A Blazor app that helps Hearthstone: Battlegrounds players make intelligent deci
 
 
 ## How to run:
-- Set and environment varible named "ADMIN_PASSWORD"
-    - using Powershell: `$env:ADMIN_PASSWORD = "your_password"`
 - Clone this repository and open the directory in powershell.
-- `cd "./HSBGHelper/HSBGHelper.Utilities"`
-- `dotnet restore`
-- `dotnet run`
-- This may take a while as it scrapes official hearthstone servers for all the data they have.
-- `cd ..`
+- Either 
+    - Load HSBGHelper.bak into SSMS or do the following:
+or
+    - `cd "./HSBGHelper/HSBGHelper.Utilities"`
+    - `dotnet restore`
+    - `dotnet run`
+            - This may take a while as it scrapes official hearthstone servers for all the data they have.
+
 - `cd "./HSBGHelper/HSBGHelper.Server"`
 - `dotnet restore`
 - `dotnet run`
-- Check the ip address and port listed in the cmd to view the site!
+- check your browser at https://localhost
 
 ## Administration
-- `/admin/edit-heroes`
-- `/admin/edit-buddies`
-- `/admin/edit-minions`
-- `/admin/edit-spells`
+- `/admin/` 
+- to be authorized (currently working on this)
+    - `/admin/edit-heroes`
+    - `/admin/edit-buddies`
+    - `/admin/edit-minions`
+    - `/admin/edit-spells`
 
 You can use these pages to add data to the the different database elements. ...There are hundreds of them! Have fun!
 
@@ -57,7 +60,3 @@ You can use these pages to add data to the the different database elements. ...T
 
 ## About HSBGHelper
 - uses WASM as well as Blazor Interactive Server-side methods
-
-### Developer Notes
-- https://learn.microsoft.com/en-us/ef/core/get-started/overview/first-app?tabs=netcore-cli
-    - entity framework scrits are here for reference.

@@ -50,18 +50,18 @@ builder.Services.AddAntiforgery(options =>
 });
 
 
-builder.Services.AddScoped<SignInManager<User>>();
+// builder.Services.AddScoped<SignInManager<User>>();
 builder.Services.AddScoped<UserManager<User>>();
 // builder.Services.AddScoped<RoleManager<IdentityRole>>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 
 builder.Services.AddCascadingAuthenticationState();
 
-// builder.Services.AddAuthentication()
-//     .AddCookie(options =>
-//     {
-//         options.LoginPath = "/admin/";
-//     });
+builder.Services.AddAuthentication()
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/admin/";
+    });
 
 builder.Services.AddLettuceEncrypt();
 
