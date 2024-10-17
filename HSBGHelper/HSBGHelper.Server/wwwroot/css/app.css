@@ -340,7 +340,7 @@ hr {
 footer {
   background-color: #877550;
   color: white;
-  padding: 1rem 0rem;
+  padding: 2rem 0rem;
 }
 
 @media (min-width: 576px) {}
