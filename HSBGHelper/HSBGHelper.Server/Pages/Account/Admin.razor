@@ -24,11 +24,11 @@
 @code {
     private sealed class InputModel
     {
-        [Required]
+        [Required(ErrorMessage = "The Email field is required.")]
         [EmailAddress]
         public string Email { get; set; } = "";
 
-        [Required]
+        [Required(ErrorMessage = "The Password field is required.")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = "";
 
@@ -41,11 +41,12 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    private InputModel Input { get; set; } = new(){
-        Email = "",
-        Password = "",
-        RememberMe = false
-    };
+    private InputModel Input { get; set; } = new()
+        {
+            Email = "",
+            Password = "",
+            RememberMe = false
+        };
 
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; } = "/admin";
@@ -102,14 +103,13 @@
                         <DataAnnotationsValidator />
                         <ValidationSummary class="text-red-500" />
 
-                        <InputText id="email" @bind-Value="Input.Email" placeholder="name@example.com"
-                            class="w-full" />
+                        <InputText id="email" @bind-Value="Input.Email" placeholder="name@example.com" class="w-full" />
                         <ValidationMessage For="() => Input.Email" class="text-red-500" />
 
                         <InputText id="password" type="password" @bind-Value="Input.Password" placeholder="password"
                             class="w-full" />
                         <ValidationMessage For="() => Input.Password" class="text-red-500" />
-                        <br/>
+                        <br />
                         <InputCheckbox @bind-Value="Input.RememberMe" /> Remember me
 
                         <button type="submit" class="btn btn-primary">Login</button>
