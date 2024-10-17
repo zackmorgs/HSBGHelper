@@ -6,7 +6,6 @@ using HSBGHelper.Server.Models;
 using HSBGHelper.Server.Data;
 using Microsoft.Extensions.Configuration;
 using PuppeteerSharp;
-using Azure.Core;
 using Microsoft.Identity.Client;
 
 namespace HSBGHelper.Utilities
@@ -136,8 +135,12 @@ namespace HSBGHelper.Utilities
             Console.WriteLine("Scraping minions");
             var minions = new List<Minion>();
 
+            context.Minions.RemoveRange(context.Minions);
+            context.SaveChanges();
+
             for (int i = 1; i <= 7; i++)
             {
+                await Task.Delay(1000);
                 var path = $"https://hearthstone.blizzard.com/en-us/battlegrounds?bgCardType=minion&tier={i}";
                 minions.AddRange(await scrapeMinionsOnPage(path, i));
             }
@@ -152,7 +155,7 @@ namespace HSBGHelper.Utilities
             // we gotta literally download chrome to start this up
             var browserFetcher = new BrowserFetcher();
             await browserFetcher.DownloadAsync();
-            await using var Browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+            await using var Browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = false });
 
             // prepare minion list
             var minions = new List<Minion>();
@@ -179,7 +182,7 @@ namespace HSBGHelper.Utilities
                 var image = await minionNode.EvaluateFunctionAsync<string>("e => e.src");
 
                 minionNode.ClickAsync().Wait();
-                await Task.Delay(500);
+                await Task.Delay(1000);
                 // wait a second to avoid whatever the fuck is happening 
                 
                 await page.WaitForSelectorAsync("[class*=CardDetailsLayout__CardFlavorText]");
@@ -237,8 +240,6 @@ namespace HSBGHelper.Utilities
                     inDuosMode = false,
                     inSoloMode = false
                 });
-
-
 
                 // close the modal
                 await page.WaitForSelectorAsync("[class*=Modal__ModalContent] [class*=CloseButton]");
@@ -330,7 +331,7 @@ namespace HSBGHelper.Utilities
 
             var page = await Browser.NewPageAsync();
             await page.GoToAsync(lesserTrinketLink);
-            await Task.Delay(1000);
+            await Task.Delay(5000);
 
             await page.WaitForSelectorAsync("#MainCardGrid .CardImage");
 
@@ -353,10 +354,10 @@ namespace HSBGHelper.Utilities
 
                 LesserTrinkets.Add(new LesserTrinket() { Name = name, Description = description, Image = image, HtmlGuide = "", Cost = 0, Tier = 'F' });
             }
-            await Browser.CloseAsync();
-
             context.LesserTrinkets.AddRange(LesserTrinkets);
             context.SaveChanges();
+
+            await Browser.CloseAsync();
         }
         private async Task ScrapeGreaterTrinkets(HSBGDb context)
         {
@@ -576,7 +577,7 @@ namespace HSBGHelper.Utilities
             // we gotta literally download chrome to start this up
             var browserFetcher = new BrowserFetcher();
             await browserFetcher.DownloadAsync();
-            await using var Browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+            await using var Browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = false  });
 
             // prepare minion list
             var heros = new List<Hero>();
@@ -586,14 +587,19 @@ namespace HSBGHelper.Utilities
 
             // go to the page and wait for the selector to load
             await page.GoToAsync(heroesPage);
-            await page.WaitForSelectorAsync(".CardWrap.hero");
+            await page.WaitForSelectorAsync("body");
 
-            // var heroImageNode = await page.QuerySelectorAllAsync(".CardImage.hero");
+            await Task.Delay(5000);
+
+            await page.WaitForSelectorAsync(".CardWrap.hero");
+            
+
             var heroLinks = await page.QuerySelectorAllAsync(".CardWrap.hero");
 
             foreach (var heroNode in heroLinks)
             {
                 // find the hero image
+                await page.WaitForSelectorAsync(".CardImage.hero");
                 var heroLinksImage = await heroNode.QuerySelectorAsync(".CardImage.hero");
 
                 var name = await heroLinksImage.EvaluateFunctionAsync<string>("e => e.alt");
@@ -601,7 +607,7 @@ namespace HSBGHelper.Utilities
 
                 Console.WriteLine(name);
                 // click the hero portrait
-                await heroNode.ClickAsync();
+                await heroLinksImage.ClickAsync();
 
                 // get the hero power description
                 var heroPowerDescriptionNode = await page.QuerySelectorAsync("p[class^='CardDetailsLayout__CardText']");
@@ -647,6 +653,7 @@ namespace HSBGHelper.Utilities
                 await Task.Delay(250);
 
                 // close the modal
+                await page.WaitForSelectorAsync(".knbYrP");
                 await page.ClickAsync(".knbYrP");
             }
             context.Heroes.AddRange(heros);

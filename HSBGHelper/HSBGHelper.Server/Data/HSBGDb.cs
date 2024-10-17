@@ -1,9 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using HSBGHelper.Server.Models;
-using DotNetEnv;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+
 namespace HSBGHelper.Server.Data
 {
-    public class HSBGDb : DbContext
+    public class HSBGDb : IdentityDbContext<User>
     {
         public HSBGDb(DbContextOptions<HSBGDb> options) : base(options) { 
         }
@@ -14,6 +15,6 @@ namespace HSBGHelper.Server.Data
         public DbSet<Spell> Spells { get; set; }
         public DbSet<LesserTrinket> LesserTrinkets { get; set; }
         public DbSet<GreaterTrinket> GreaterTrinkets { get; set; }  
-        public DbSet<User> Users { get; set; }
+        public override DbSet<User> Users { get; set; }
     }
 }

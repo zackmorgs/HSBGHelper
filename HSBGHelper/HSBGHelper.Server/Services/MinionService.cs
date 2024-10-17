@@ -38,5 +38,12 @@ namespace HSBGHelper.Server.Services
             _context.Minions.Update(minion);
             await _context.SaveChangesAsync();
         }
+        public async Task SetTypeById(int id, string type) 
+        {
+            var minion = _context.Minions.Find(id);
+            minion.Type = type;
+            _context.Minions.Update(minion);
+            await _context.SaveChangesAsync();
+        }
     }
 }

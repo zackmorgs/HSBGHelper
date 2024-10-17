@@ -162,11 +162,9 @@ filteredMinions = filteredMinions.Take(10).ToList();
     protected override async Task OnInitializedAsync()
     {
         tiers = new List<string> { "All", "1", "2", "3", "4", "5", "6", "7" };
-        types = new List<string>
-{
-"All", "Beast", "Demon", "Dragon", "Elemental", "Mech", "Murloc", "Pirate", "Quilboar", "Undead", "Neutral"
-};
-
+        types = dbContext.Minions.Select(m => m.Type).Distinct().ToList();
+        types.Add("All");
+        types.Sort();
         await LoadMinions();
     }
     private async Task LoadMinions()

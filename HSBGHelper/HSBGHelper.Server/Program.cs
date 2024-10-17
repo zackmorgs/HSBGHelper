@@ -1,12 +1,13 @@
 using Microsoft.EntityFrameworkCore;
-using HSBGHelper.Server.Components;
-using HSBGHelper.Server.Data;
-using HSBGHelper.Server.Services;
-using HSBGHelper.Server.Models;
 using Microsoft.AspNetCore.Identity;
 using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity;
+
+using HSBGHelper.Server.Components;
+using HSBGHelper.Server.Data;
+using HSBGHelper.Server.Services;
+using HSBGHelper.Server.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,7 +40,7 @@ builder.Services.AddScoped<GreaterTrinketService>();
 builder.Services.AddDbContext<HSBGDb>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<User, IdentityRole<int>>()
+builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<HSBGDb>()
     .AddDefaultTokenProviders();
 
@@ -49,15 +50,18 @@ builder.Services.AddAntiforgery(options =>
 });
 
 
-builder.Services.AddScoped<AuthProvider>();
 builder.Services.AddScoped<SignInManager<User>>();
 builder.Services.AddScoped<UserManager<User>>();
-builder.Services.AddScoped<RoleManager<IdentityRole<int>>>();
+// builder.Services.AddScoped<RoleManager<IdentityRole>>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 
 builder.Services.AddCascadingAuthenticationState();
 
-builder.Services.AddBlazoredSessionStorage();
+builder.Services.AddAuthentication()
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/admin/";
+    });
 
 builder.Services.AddLettuceEncrypt();
 
