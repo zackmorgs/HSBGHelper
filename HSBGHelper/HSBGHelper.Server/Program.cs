@@ -20,6 +20,7 @@ builder.WebHost.ConfigureKestrel(kestrel =>
             h.UseLettuceEncrypt(kestrel.ApplicationServices);
         });
     });
+    kestrel.ListenAnyIP(80);
 });
 
 // Add services to the container.
@@ -64,6 +65,8 @@ builder.Services.AddAuthentication()
     });
 
 builder.Services.AddLettuceEncrypt();
+
+
 
 var app = builder.Build();
 
