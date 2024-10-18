@@ -41,6 +41,7 @@ builder.Services.AddScoped<GreaterTrinketService>();
 builder.Services.AddDbContext<HSBGDb>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Identity configuration
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<HSBGDb>()
     .AddDefaultTokenProviders();
@@ -50,23 +51,21 @@ builder.Services.AddAntiforgery(options =>
     options.HeaderName = "X-CSRF-TOKEN";
 });
 
-
-// builder.Services.AddScoped<SignInManager<User>>();
+builder.Services.AddScoped<SignInManager<User>>();
 builder.Services.AddScoped<UserManager<User>>();
-// builder.Services.AddScoped<RoleManager<IdentityRole>>();
+builder.Services.AddScoped<RoleManager<IdentityRole>>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 
 builder.Services.AddCascadingAuthenticationState();
 
-builder.Services.AddAuthentication()
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/admin/";
-    });
+// Configure Identity cookie settings
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/admin"; // Default login path
+    options.AccessDeniedPath = "/access-denied"; // Access denied path
+});
 
 builder.Services.AddLettuceEncrypt();
-
-
 
 var app = builder.Build();
 
@@ -78,7 +77,6 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -87,9 +85,12 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 
+app.UseAuthentication(); // Ensure this is before UseAuthorization
+app.UseAuthorization();
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
-        .AddAdditionalAssemblies(typeof(HSBGHelper.Client._Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(HSBGHelper.Client._Imports).Assembly);
 
 app.Run();

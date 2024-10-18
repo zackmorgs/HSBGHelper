@@ -33,7 +33,7 @@
         public string Password { get; set; } = "";
 
         [Display(Name = "Remember me?")]
-        public bool RememberMe { get; set; }
+        public bool RememberMe { get; set; } = true;
     }
 
     @* [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; } *@
@@ -45,7 +45,7 @@
         {
             Email = "",
             Password = "",
-            RememberMe = false
+            RememberMe = true
         };
 
     [SupplyParameterFromQuery]
@@ -55,8 +55,6 @@
     protected override async Task OnInitializedAsync()
     {
     }
-
-
     public async Task LoginUser()
     {
         Console.WriteLine("Attempting to login...");
@@ -65,8 +63,13 @@
         {
             Console.WriteLine(Input.Email);
             Console.WriteLine(Input.Password);
-            var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure:
-            false);
+            var result = new SignInResult();
+            try {
+                result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, false);
+            } catch (Exception ex) {
+                Console.WriteLine(ex.ToString());
+            }
+
             if (result.Succeeded)
             {
                 Console.WriteLine("Success");
@@ -102,9 +105,6 @@
             <section id="login">
                 <div class="container mx-auto max-w-96 mb-8">
                     <EditForm Model="Input" OnValidSubmit="LoginUser" class="p-4" Context="login">
-                        <DataAnnotationsValidator />
-                        <ValidationSummary class="text-red-500" />
-
                         <InputText id="email" @bind-Value="Input.Email" placeholder="name@example.com" class="w-full" />
                         <ValidationMessage For="() => Input.Email" class="text-red-500" />
 
@@ -114,7 +114,7 @@
                         <br />
                         <InputCheckbox @bind-Value="Input.RememberMe" /> Remember me
 
-                        <button type="submit" class="btn btn-primary">Login</button>
+                        <button type="submit" class="btn btn-primary w-full mt-2">Login</button>
                     </EditForm>
                 </div>
             </section>

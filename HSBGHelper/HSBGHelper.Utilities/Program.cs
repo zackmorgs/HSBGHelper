@@ -49,7 +49,8 @@ namespace HSBGHelper.Utilities
                     {
                         Name = "admin",
                         Email = "zackmorgenthaler@gmail.com",
-                        Password = "Password_1234"
+                        Password = "Password_1234",
+                        EmailConfirmed = true
                     });
 
                     context.SaveChanges();
@@ -75,7 +76,8 @@ namespace HSBGHelper.Utilities
                         {
                             Name = "admin",
                             Email = "zackmorgenthaler@gmail.com",
-                            Password = "Ibanez_RG550"
+                            Password = "Ibanez_RG550",
+                            EmailConfirmed = true
                         });
 
                         context.SaveChanges();
