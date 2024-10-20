@@ -1,97 +1,27 @@
-@page "/admin/"
-@inherits ComponentBase
+@page "/admin"
+@* @layout HSBGHelper.Server.Components.Account.Shared.AccountLayout;*@
 
-@* @attribute [Authorize] *@
-
-@rendermode InteractiveServer
 
 @using HSBGHelper.Server.Models;
 @using HSBGHelper.Server.Services;
+@using HSBGHelper.Server.Data;
 @using System.ComponentModel.DataAnnotations;
 @using Microsoft.AspNetCore.Authentication;
 @using Microsoft.AspNetCore.Authorization;
 @using Microsoft.AspNetCore.Components.Authorization;
 @using Microsoft.AspNetCore.Identity;
+
 @using AntDesign.Icons;
-@using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity
+@* @using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity *@
 
+@inject UserService userService;
 @inject NavigationManager NavigationManager;
-@inject UserManager<User> _userManager;
-@inject SignInManager<User> _signInManager;
+@inject UserManager<User> userManager;
+@inject SignInManager<User> signInManager;
 @inject ILogger<Admin> Logger;
-@inject IdentityRedirectManager RedirectManager;
+@* @inject IdentityRedirectManager RedirectManager; *@
 
-@code {
-    private sealed class InputModel
-    {
-        [Required(ErrorMessage = "The Email field is required.")]
-        [EmailAddress]
-        public string Email { get; set; } = "";
-
-        [Required(ErrorMessage = "The Password field is required.")]
-        [DataType(DataType.Password)]
-        public string Password { get; set; } = "";
-
-        [Display(Name = "Remember me?")]
-        public bool RememberMe { get; set; } = true;
-    }
-
-    @* [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; } *@
-
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
-
-    private InputModel Input { get; set; } = new()
-        {
-            Email = "",
-            Password = "",
-            RememberMe = true
-        };
-
-    [SupplyParameterFromQuery]
-    private string? ReturnUrl { get; set; } = "/admin";
-    private string loginErrorMessage { get; set; } = "";
-
-    protected override async Task OnInitializedAsync()
-    {
-    }
-    public async Task LoginUser()
-    {
-        Console.WriteLine("Attempting to login...");
-
-        try
-        {
-            Console.WriteLine(Input.Email);
-            Console.WriteLine(Input.Password);
-            var result = new SignInResult();
-            try {
-                result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, false);
-            } catch (Exception ex) {
-                Console.WriteLine(ex.ToString());
-            }
-
-            if (result.Succeeded)
-            {
-                Console.WriteLine("Success");
-                Logger.LogInformation("User logged in.");
-                NavigationManager.NavigateTo(ReturnUrl ?? "/admin");
-            }
-            else
-            {
-                Console.WriteLine("Failure");
-                loginErrorMessage = "Error: Invalid login attempt.";
-            }
-        }
-        catch (Exception ex)
-        {
-            loginErrorMessage = $"An error occurred: {ex.Message}";
-            Console.WriteLine(ex.ToString());
-        }
-    }
-
-
-
-}
+@* @inject HSBGDb dbContext; *@
 
 <section>
     <header class="hero">
@@ -104,15 +34,15 @@
         <NotAuthorized>
             <section id="login">
                 <div class="container mx-auto max-w-96 mb-8">
-                    <EditForm Model="Input" OnValidSubmit="LoginUser" class="p-4" Context="login">
-                        <InputText id="email" @bind-Value="Input.Email" placeholder="name@example.com" class="w-full" />
-                        <ValidationMessage For="() => Input.Email" class="text-red-500" />
+                   <EditForm FormName="Login" class="p-4" Model="Input" OnValidSubmit="LoginUser" Context="LoginContext">
+                        <InputText id="username" @bind-Value="Input.UserName" placeholder="Username" class="w-full" />
+                        <ValidationMessage For="() => Input.UserName" class="text-red-500" />
 
                         <InputText id="password" type="password" @bind-Value="Input.Password" placeholder="password"
-                            class="w-full" />
+                                   class="w-full" />
                         <ValidationMessage For="() => Input.Password" class="text-red-500" />
                         <br />
-                        <InputCheckbox @bind-Value="Input.RememberMe" /> Remember me
+                        <InputCheckbox @bind-Value="Input.RememberMe" /> Remember me 
 
                         <button type="submit" class="btn btn-primary w-full mt-2">Login</button>
                     </EditForm>
@@ -158,20 +88,74 @@
 
 
 <style>
-    #email,
+    #username,
     #password {
         border-radius: 0.25rem;
         padding: 0.5rem;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.5rem;  
     }
 </style>
 
 
-<style>
-    #email,
-    #password {
-        border-radius: 0.25rem;
-        padding: 0.5rem;
-        margin-bottom: 0.5rem;
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        this.Input ??= new();
+        // userService = new UserService(userManager, signInManager);
+        await userService.createAdmin();
     }
-</style>
+
+
+    public sealed class InputModel
+    {
+        [Required(ErrorMessage = "The UserName field is required.")]
+        [DataType(DataType.Text)]
+        public string UserName { get; set; }
+
+        [Required(ErrorMessage = "The Password field is required.")]
+        [DataType(DataType.Password)]
+        public string Password { get; set; }
+
+        [Display(Name = "Remember me?")]
+        public bool RememberMe { get; set; }
+    }
+
+    @* [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; } *@
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    public InputModel? Input { get; set; }
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; } = "/admin";
+    private string loginErrorMessage { get; set; } = "";
+
+
+    public async Task LoginUser()
+    {
+        Console.WriteLine("Attempting to login...");
+
+        var user = await userManager.FindByNameAsync(Input.UserName);
+
+
+        var result = await signInManager.PasswordSignInAsync(Input.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+
+        Console.WriteLine("Result: " + result.IsNotAllowed);
+        Console.WriteLine("Result: " + result.IsLockedOut);
+
+        if (result.Succeeded)
+        {
+            Logger.LogInformation("User logged in.");
+            
+            NavigationManager.NavigateTo("/admin");
+        }
+        else
+        {
+            loginErrorMessage = "Invalid login attempt.";
+            Logger.LogWarning("Invalid login attempt.");
+        }
+    }
+}
+

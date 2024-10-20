@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity;
 
@@ -8,9 +7,12 @@ using HSBGHelper.Server.Components;
 using HSBGHelper.Server.Data;
 using HSBGHelper.Server.Services;
 using HSBGHelper.Server.Models;
+using Microsoft.AspNetCore.Routing;
 
+// creat builder
 var builder = WebApplication.CreateBuilder(args);
 
+// configure let's encrypt 
 builder.WebHost.ConfigureKestrel(kestrel =>
 {
     kestrel.ListenAnyIP(443, (portOptions) =>
@@ -23,14 +25,17 @@ builder.WebHost.ConfigureKestrel(kestrel =>
     kestrel.ListenAnyIP(80);
 });
 
-// Add services to the container.
+// Add framework to services
 builder.Services
     .AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-    
-// Register Services
+// add ms sql server
+builder.Services.AddDbContext<HSBGDb>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register custom Services
 builder.Services.AddScoped<MinionService>();
 builder.Services.AddScoped<HeroService>();
 builder.Services.AddScoped<SpellService>();
@@ -38,32 +43,54 @@ builder.Services.AddScoped<HeroPowerService>();
 builder.Services.AddScoped<LesserTrinketService>();
 builder.Services.AddScoped<GreaterTrinketService>();
 
-builder.Services.AddDbContext<HSBGDb>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// add identity core
+builder.Services.AddIdentityCore<User>()
+    .AddEntityFrameworkStores<HSBGDb>();
 
-// Identity configuration
-builder.Services.AddIdentity<User, IdentityRole>()
-    .AddEntityFrameworkStores<HSBGDb>()
-    .AddDefaultTokenProviders();
-
-builder.Services.AddAntiforgery(options =>
+builder.Services.Configure<IdentityOptions>(options =>
 {
-    options.HeaderName = "X-CSRF-TOKEN";
+    // Password settings
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = false;
+
+    // Lockout settings
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
+    options.Lockout.MaxFailedAccessAttempts = 10;
+    options.Lockout.AllowedForNewUsers = true;
+
+    // User settings
+    options.User.RequireUniqueEmail = false;
 });
 
-builder.Services.AddScoped<SignInManager<User>>();
-builder.Services.AddScoped<UserManager<User>>();
-builder.Services.AddScoped<RoleManager<IdentityRole>>();
-builder.Services.AddScoped<IdentityRedirectManager>();
-
-builder.Services.AddCascadingAuthenticationState();
-
-// Configure Identity cookie settings
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/admin"; // Default login path
-    options.AccessDeniedPath = "/access-denied"; // Access denied path
+    options.Cookie.HttpOnly = true;
+    options.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.StatusCode = 401;
+        return Task.CompletedTask;
+    };
 });
+
+builder.Services.AddScoped<UserManager<User>>();
+builder.Services.AddScoped<SignInManager<User>>();
+
+builder.Services.AddScoped<UserService>();
+
+builder.Services.AddScoped<IdentityRedirectManager>();
+
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication().AddCookie(IdentityConstants.ApplicationScheme);
+
+builder.Services.AddIdentityCore<User>(options => {
+    options.SignIn.RequireConfirmedAccount = false;
+})
+    .AddEntityFrameworkStores<HSBGDb>()
+    .AddDefaultTokenProviders()
+    .AddApiEndpoints();
 
 builder.Services.AddLettuceEncrypt();
 
@@ -85,12 +112,11 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 
-app.UseAuthentication(); // Ensure this is before UseAuthorization
-app.UseAuthorization();
-
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(HSBGHelper.Client._Imports).Assembly);
+
+app.MapIdentityApi<IdentityUser>();
 
 app.Run();

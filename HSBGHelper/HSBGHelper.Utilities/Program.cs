@@ -7,6 +7,7 @@ using HSBGHelper.Server.Data;
 using Microsoft.Extensions.Configuration;
 using PuppeteerSharp;
 using Microsoft.Identity.Client;
+using Microsoft.AspNetCore.Identity;
 
 namespace HSBGHelper.Utilities
 {
@@ -17,8 +18,11 @@ namespace HSBGHelper.Utilities
             Console.WriteLine("HSBGHelper.Utilities");
             Console.WriteLine("Starting Program");
         }
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
 
         public static async Task Main(string[] args)
+
         {
             Console.WriteLine("Start HSBGHelper.Utilities");
 
@@ -45,14 +49,7 @@ namespace HSBGHelper.Utilities
 
                 if (input.ToUpper() == "Y")
                 {
-                    context.Users.Add(new User()
-                    {
-                        Name = "admin",
-                        Email = "zackmorgenthaler@gmail.com",
-                        Password = "Password_1234",
-                        EmailConfirmed = true
-                    });
-
+                    
                     context.SaveChanges();
                     await program.ScrapeAllHeroInformation(context);
                     await program.SetHeroMode(context);
@@ -66,23 +63,6 @@ namespace HSBGHelper.Utilities
                 }
                 else
                 {
-                    Console.WriteLine("Add admin account?");
-                    Console.WriteLine("Y/N");
-                    input = Console.ReadLine();
-
-                    if (input.ToUpper() == "Y")
-                    {
-                        context.Users.Add(new User()
-                        {
-                            Name = "admin",
-                            Email = "zackmorgenthaler@gmail.com",
-                            Password = "Ibanez_RG550",
-                            EmailConfirmed = true
-                        });
-
-                        context.SaveChanges();
-                    }
-
                     Console.WriteLine("Scraping all minion information?");
                     Console.WriteLine("Y/N");
 

@@ -57,6 +57,7 @@ You can use these pages to add data to the the different database elements. ...T
 
 ## To Do:
 - Handle synergies and useful information about each card in the game
+- add duo buddy finder
 
 ## About HSBGHelper
 - uses WASM as well as Blazor Interactive Server-side methods
